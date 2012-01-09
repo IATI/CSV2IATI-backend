@@ -27,7 +27,7 @@ def create_IATI_xml(iatidata, dir, o):
             for key, val in field.items():
                 if key == "transaction":
                     transactions = Element("transaction")
-                    node.append(transactions)
+                    a.append(transactions)
                     for trans_data, trans_data_value in val.items():
                         transaction_field = Element(trans_data)
                         for attrib, attrib_value in trans_data_value.items():

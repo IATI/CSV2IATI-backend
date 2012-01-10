@@ -14,7 +14,8 @@ The script takes two arguments: the source CSV file and the mapping.
 These must be provided as full URLs, even if they are only on your computer. For example:
 
 ::
-$ python run.py file:///home/YOUR_USER_NAME/PATH_TO_CSV_CONVERSION_TOOL/testdata/csv.csv file:///home/YOUR_USER_NAME/PATH_TO_CSV_CONVERSION_TOOL/testdata/json.json
+
+    $ python run.py file:///home/YOUR_USER_NAME/PATH_TO_CSV_CONVERSION_TOOL/testdata/csv.csv file:///home/YOUR_USER_NAME/PATH_TO_CSV_CONVERSION_TOOL/testdata/json.json
 
 The data will be output to PATH_TO_CONVERSION_TOOL/temp/TODAY'S_DATE/IATI.xml
 

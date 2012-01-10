@@ -7,6 +7,7 @@ import csv
 import pprint
 from xml.etree.cElementTree import Element, ElementTree
 
+# Process the data created in parse_csv()
 def create_IATI_xml(iatidata, dir, o):
     node = Element('iati-activities')
     node.set("version", "1.0")
@@ -70,6 +71,7 @@ def create_IATI_xml(iatidata, dir, o):
 
     print "IATI-XML file saved to ", XMLfilename
 
+# Process the mapping file and parse the CSV according to those rules, to construct a big list in "iatidata"
 def parse_csv(dir):
     csvfile = open(dir + '/csv.csv', 'r')
     csvdata=csv.DictReader(csvfile)
@@ -198,6 +200,7 @@ def parse_csv(dir):
             raise Exception("Unknown column: ", e)
     create_IATI_xml(iatidata, dir, o)
  
+# Save the fiels received
 def save_file(url, thetype, dir):
     req = urllib2.Request(url)
     try:
@@ -219,6 +222,7 @@ def save_file(url, thetype, dir):
         print "Reason: ", e.reason
         raise Exception
 
+# Receive the files as inputs from the command line
 def get_files():
     if (len(sys.argv) > 2):
         csvfile = sys.argv[1]

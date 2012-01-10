@@ -34,8 +34,8 @@ The mapping section should contain:
 * The default language (``lang``)
 
 ** Example: **
-
 ::
+
     "organisation": {
         "reporting-org": {
             "text": "Oxfam GB",

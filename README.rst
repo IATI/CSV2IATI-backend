@@ -45,7 +45,7 @@ The mapping section should contain:
         "default-currency": "GBP",
         "lang": "en"
     }
-::
+
 
 *Mapping section*
 

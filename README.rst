@@ -33,8 +33,8 @@ The mapping section should contain:
 * The default currency (``default-currency``)
 * The default language (``lang``)
 
-** Example: **
-    ::
+** Example: **::
+    
     "organisation": {
         "reporting-org": {
             "text": "Oxfam GB",

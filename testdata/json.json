@@ -1,4 +1,13 @@
 {
+	"organisation": {
+	    "reporting-org": {
+	        "text": "Oxfam GB",
+	        "ref": "GB-CHC-202918",
+	        "type": "21"
+	    },
+		"default-currency": "GBP",
+		"lang": "en"
+	},
 	"mapping": {
 		"title": {
 		    "iati_field": "title",
@@ -21,6 +30,20 @@
 			"constant": "",
 			"type": "column",
 			"prefix":"GB-CHC-202918-"
+		},
+		"recipient-country": {
+		    "iati_field": "recipient-country",
+		    "fields": {
+		        "text": {
+		            "type": "column",
+		            "column": "Loc of Impact"
+		        },
+		        "code": {
+		            "type": "column",
+		            "column": "ISO CODE"
+		        }
+		    },
+			"type": "compound"
 		},
 		"funding-org": {
 		    "iati_field": "participating-org",
@@ -313,14 +336,5 @@
 	           }
 	        }
         }
-	},
-	"organisation": {
-	    "reporting-org": {
-	        "text": "Oxfam GB",
-	        "ref": "GB-CHC-202918",
-	        "type": "21"
-	    },
-		"default-currency": "GBP",
-		"lang": "en"
 	}
 }

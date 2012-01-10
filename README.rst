@@ -25,7 +25,7 @@ There are two sections in the JSON mapping file:
 * `organisation`
 * `mapping` 
 
-*Organisation section*
+**Organisation section**
 
 The mapping section should contain:
 
@@ -33,7 +33,7 @@ The mapping section should contain:
 * The default currency (``default-currency``)
 * The default language (``lang``)
 
-** Example: **
+*Example:*
 ::
 
     "organisation": {
@@ -47,7 +47,7 @@ The mapping section should contain:
     }
 
 
-*Mapping section*
+**Mapping section**
 
 In the JSON mapping file, you create one element per object that you 
 want to represent.
@@ -58,7 +58,7 @@ want to represent.
 * Objects can also have *prefixes* (e.g., if the source data contains the project ID you want to use in the ``iati-identifier`` IATI field, you would prefix it with the reporting organisation's reference. (``prefix``)
 * Objects can also be more complicated if they have attributes. In this case you set the ``type`` to ``compound`` and create a series of ``fields`` within that object.
 
-** Example: **
+*Example:*
 ::
 
     "mapping": {

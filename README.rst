@@ -57,7 +57,8 @@ want to represent.
 * Objects can also have *prefixes* (e.g., if the source data contains the project ID you want to use in the ``iati-identifier`` IATI field, you would prefix it with the reporting organisation's reference. (``prefix``)
 * Objects can also be more complicated if they have attributes. In this case you set the ``type`` to ``compound`` and create a series of ``fields`` within that object.
 
-** Example: ** ::
+** Example: **
+::
 
     "mapping": {
         "title": {

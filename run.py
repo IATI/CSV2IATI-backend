@@ -101,10 +101,25 @@ def parse_csv(dir):
                             if ((m[field]["fields"][part].has_key("datatype")) and (m[field]["fields"][part]["datatype"] == 'float')):
                                 try:
                                     fielddata[iati_field][part] = float(line[part_column])
+                                    if (str(float(line[part_column])) == '-0.0'):
+                                        fielddata[iati_field][part] = '0'
                                 except:
                                     fielddata[iati_field][part] = '0'
                             else:
-                                fielddata[iati_field][part] = line[part_column]                                
+                            
+                                if (m[field]["fields"][part].has_key("text-transform-type")):
+                                    if (m[field]["fields"][part]["text-transform-type"] == "date"):
+                                        text_transform_format = m[field]["fields"][part]["text-transform-format"]
+                                        thedata = line[part_column].strip()
+                                        try:
+                                            newdate = datetime.strptime(thedata, text_transform_format).strftime("%Y-%m-%d")
+                                            fielddata[iati_field][part] = str(newdate)
+                                            
+                                        except ValueError, e:
+                                            print "Failed to convert date:", e
+                                            pass
+                                else:
+                                    fielddata[iati_field][part] = line[part_column].strip()
                             del part_column
                 # it's transaction data, so break it down
                 elif (m[field]["type"] == "transaction"):
@@ -114,17 +129,28 @@ def parse_csv(dir):
                     for transactionfield in m[field]["transaction_data_fields"]:
                         transaction_iati_field = m[field]["transaction_data_fields"][transactionfield]["iati_field"]
                         fielddata[iati_field][transaction_iati_field] = {}
-                        # got e.g. transaction type code
-                        for part in m[field]["transaction_data_fields"][transactionfield]["fields"]:
-                            if (m[field]["transaction_data_fields"][transactionfield]["fields"][part]["type"] == 'constant'):
-                                fielddata[iati_field][transaction_iati_field][part] = m[field]["transaction_data_fields"][transactionfield]["fields"][part]["constant"]
-                            else:
-                                part_column = m[field]["transaction_data_fields"][transactionfield]["fields"][part]["column"]
-                                if (m[field]["transaction_data_fields"][transactionfield]["fields"][part]).has_key("stripchars"):
-                                    fielddata[iati_field][transaction_iati_field][part] = (line[part_column].strip().replace(m[field]["transaction_data_fields"][transactionfield]["fields"][part]["stripchars"], ""))
+                        if (m[field]["transaction_data_fields"][transactionfield]["type"] == "compound"):
+                            # got e.g. transaction type code
+                            for part in m[field]["transaction_data_fields"][transactionfield]["fields"]:
+                                if (m[field]["transaction_data_fields"][transactionfield]["fields"][part]["type"] == 'constant'):
+                                    fielddata[iati_field][transaction_iati_field][part] = m[field]["transaction_data_fields"][transactionfield]["fields"][part]["constant"]
                                 else:
-                                    fielddata[iati_field][transaction_iati_field][part] = line[part_column]
-                                del part_column
+                                    part_column = m[field]["transaction_data_fields"][transactionfield]["fields"][part]["column"]
+                                    if (m[field]["transaction_data_fields"][transactionfield]["fields"][part]).has_key("stripchars"):
+                                        fielddata[iati_field][transaction_iati_field][part] = (line[part_column].strip().replace(m[field]["transaction_data_fields"][transactionfield]["fields"][part]["stripchars"], ""))
+                                    else:
+                                        fielddata[iati_field][transaction_iati_field][part] = line[part_column]
+                                    del part_column
+                        else:
+                            # it's a text field within the transaction...
+                            if (m[field]["transaction_data_fields"][transactionfield]["type"] == "column"):
+                                field_column = m[field]["transaction_data_fields"][transactionfield]["column"]
+                            else:
+                                field_constant = m[field]["transaction_data_fields"][transactionfield]["constant"]
+                            try:
+                                fielddata[iati_field][transaction_iati_field]["text"] = prefix + line[field_column]
+                            except NameError:
+                                fielddata[iati_field][transaction_iati_field]["text"] = field_constant
                             
                 else:
                     # otherwise, it's just a text field ...
@@ -132,18 +158,38 @@ def parse_csv(dir):
                         prefix = m[field]["prefix"]
                     else:
                         prefix = ""
-                    if (m[field]["type"] == "column"):
-                        field_column = m[field]["column"]
+                    if (m[field].has_key("text-transform-type")):
+                        if (m[field]["text-transform-type"] == "date"):
+                            if (m[field]["type"] == "column"):
+                                field_column = m[field]["column"].strip()
+                            else:
+                                field_constant = m[field]["constant"]
+                            try:
+                                thedata = prefix + line[field_column].strip()
+                            except NameError:
+                                thedata = field_constant.strip()
+                            text_transform_format = m[field]["text-transform-format"]
+                            try:
+                                newdate = datetime.strptime(thedata, text_transform_format).strftime("%Y-%m-%d")
+                                print newdate
+                                fielddata[iati_field]["text"] = str(newdate)
+                                
+                            except ValueError, e:
+                                print "Failed to convert date:",e
+                                pass
                     else:
-                        field_constant = m[field]["constant"]
-                    try:
-                        fielddata[iati_field]["text"] = prefix + line[field_column]
-                    except NameError:
-                        fielddata[iati_field]["text"] = field_constant
+                        if (m[field]["type"] == "column"):
+                            field_column = m[field]["column"]
+                        else:
+                            field_constant = m[field]["constant"]
+                        try:
+                            fielddata[iati_field]["text"] = prefix + line[field_column].strip()
+                        except NameError:
+                            fielddata[iati_field]["text"] = field_constant.strip()
                 try:
                     del field_column 
                     del field_constant
-                    del fielddata[iati_field]
+                    #del fielddata[iati_field]
                 except:
                     pass
                 linedata.append(fielddata)

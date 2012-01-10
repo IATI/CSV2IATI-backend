@@ -35,6 +35,7 @@ The mapping section should contain:
 
 ** Example: **
 
+::
     "organisation": {
         "reporting-org": {
             "text": "Oxfam GB",
@@ -44,7 +45,7 @@ The mapping section should contain:
         "default-currency": "GBP",
         "lang": "en"
     }
-
+::
 
 *Mapping section*
 

@@ -3,6 +3,7 @@ International Aid Transparency Initiative CSV Conversion tool
 
 The scripts in this repository transform data from a CSV spreadsheet
 into IATI-XML data. This requires two components:
+
 * Data -- A flat CSV file
 * Mapping -- A JSON mapping file, which describes how the CSV file should be related to the IATI Standard
 
@@ -20,12 +21,14 @@ JSON mapping file
 -----------------
 
 There are two sections in the JSON mapping file:
+
 * `organisation`
 * `mapping` 
 
 *Organisation section*
 
 The mapping section should contain:
+
 * The reporting organisation data (``reporting-org``)
 * The default currency (``default-currency``)
 * The default language (``lang``)

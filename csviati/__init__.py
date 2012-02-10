@@ -234,7 +234,7 @@ def get_files():
     if (request.form['csv_url'] != '') and (request.form['model_url'] != ''):
         csvfile = request.form['csv_url']
         modelfile = request.form['model_url']
-        dir = 'temp/' + str(date.today())
+        dir = 'static/' + str(date.today())
         output = ''
         if not os.path.exists(dir):
             try:

@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+{% block body %}
+<h2>CSV-IATI Converter</h2>
+<p>Please enter the URLs of your model and your CSV file</p>
+<form method="post" action="">
+<p><label for="model_url">Model URL:</label><input type="text" name="model_url" /></p>
+<p><label for="csv_url">CSV URL:</label><input type="text" name="csv_url" /></p>
+<p><input type="submit" value="Convert" /></p>
+</form>
+{{ pages }}
+{% endblock %}

@@ -1,0 +1,216 @@
+{
+	"organisation": {
+	    "reporting-org": {
+	        "text": "Belgium Directorate General for Co-operation and Development",
+	        "ref": "BE-10",
+	        "type": "10"
+	    },
+		"default-currency": "EUR",
+		"lang": "en"
+	},
+	"mapping": {
+		"title": {
+		    "iati_field": "title",
+			"column": "title",
+			"default_value": "",
+			"constant": "",
+			"type": "column"
+		},
+		"iati-identifier": {
+		    "iati_field": "iati-identifier",
+			"column": "id",
+			"default_value": "",
+			"constant": "",
+			"type": "column",
+			"prefix":"BE-10-"
+		},
+		"recipient-country": {
+		    "iati_field": "recipient-country",
+		    "column":"country",
+			"type": "column"
+		},
+		"funding-org": {
+		    "iati_field": "participating-org",
+		    "fields": {
+		        "text": {
+		            "type": "constant",
+		            "constant": "Belgium"
+		        },
+		        "ref": {
+		            "type": "constant",
+		            "constant": "BE"
+		        },
+		        "type": {
+		            "type": "constant",
+		            "constant": "10"
+		        },
+		        "role": {
+		            "type": "constant",
+		            "constant": "funding"
+	            }
+		    },
+			"type": "compound"
+		},
+		"extending-org": {
+		    "iati_field": "participating-org",
+		    "fields": {
+		        "text": {
+		            "type": "constant",
+		            "constant": "Belgium Directorate General for Co-operation and Development"
+		        },
+		        "ref": {
+		            "type": "constant",
+		            "constant": "BE-10"
+		        },
+		        "type": {
+		            "type": "constant",
+		            "constant": "10"
+		        },
+		        "role": {
+		            "type": "constant",
+		            "constant": "extending"
+	            }
+		    },
+			"type": "compound"
+		},
+		"implementing-org": {
+		    "iati_field": "participating-org",
+		    "fields": {
+		        "text": {
+		            "type": "column",
+		            "column": "actordescription"
+		        },
+		        "ref": {
+		            "type": "column",
+		            "column": "actor"
+		        },
+		        "role": {
+		            "type": "constant",
+		            "constant": "implementing"
+	            }
+		    },
+			"type": "compound"
+		},
+		"sector1": {
+		    "iati_field": "sector",
+		    "fields": {
+		        "text": {
+		            "type":"column",
+		            "column": "sector_name"
+		        },
+		        "vocabulary": {
+		            "type":"constant",
+		            "constant": "DAC"
+		        },
+		        "code": {
+		            "type":"column",
+		            "column": "sector_code"
+		        },
+		        "percentage": {
+		            "type":"constant",
+		            "constant": "100",
+		            "datatype":"float"
+		        }
+		    },
+		    "type":"compound"
+	    },
+	    "2009_transactions": {
+	        "iati_field":"transaction",
+	        "type":"transaction",
+	        "transaction_data_fields": {
+	            "transaction_type": {
+	                "iati_field":"transaction-type",
+	                "type":"compound",
+	                "fields": {
+	                    "text": {
+	                        "constant":"Disbursement",
+	                        "type":"constant"	                    
+	                    },
+	                    "code": {
+	                        "constant":"D",
+	                        "type":"constant"
+	                    }
+	                }
+	            },
+	            "transaction_value": {
+	                "iati_field":"value",
+	                "type":"compound",
+	                "fields": {
+	                    "text": {
+	                        "column":"Expense 2009",
+	                        "type":"column"
+	                    },
+	                    "value-date": {
+	                        "constant":"2009-01-01",
+	                        "type":"constant"
+	                    }
+	                }
+	            },
+	            "transaction_date": {
+	                "iati_field":"transaction-date",
+	                "type":"compound",
+	                "fields": {
+	                    "iso-date": {
+	                        "constant":"2009-01-01",
+	                        "type":"constant"
+	                    }
+	                }
+	            },
+	            "description": {
+	                "iati_field":"description",
+	                "type":"constant",
+	                "constant": "Expense 2009"
+	           }
+	        }
+        },
+	    "2010_transactions": {
+	        "iati_field":"transaction",
+	        "type":"transaction",
+	        "transaction_data_fields": {
+	            "transaction_type": {
+	                "iati_field":"transaction-type",
+	                "type":"compound",
+	                "fields": {
+	                    "text": {
+	                        "constant":"Disbursement",
+	                        "type":"constant"	                    
+	                    },
+	                    "code": {
+	                        "constant":"D",
+	                        "type":"constant"
+	                    }
+	                }
+	            },
+	            "transaction_value": {
+	                "iati_field":"value",
+	                "type":"compound",
+	                "fields": {
+	                    "text": {
+	                        "column":"Expense 2010",
+	                        "type":"column"
+	                    },
+	                    "value-date": {
+	                        "constant":"2010-01-01",
+	                        "type":"constant"
+	                    }
+	                }
+	            },
+	            "transaction_date": {
+	                "iati_field":"transaction-date",
+	                "type":"compound",
+	                "fields": {
+	                    "iso-date": {
+	                        "constant":"2010-01-01",
+	                        "type":"constant"
+	                    }
+	                }
+	            },
+	            "description": {
+	                "iati_field":"description",
+	                "type":"constant",
+	                "constant": "Expense 2010"
+	           }
+	        }
+         }
+	}
+}

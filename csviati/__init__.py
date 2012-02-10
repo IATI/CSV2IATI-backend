@@ -71,7 +71,8 @@ def create_IATI_xml(iatidata, dir, o):
     doc = ElementTree(node)        
     XMLfilename = dir + '/' + str(time.time()) + '.xml'
     doc.write(XMLfilename)
-    output += "<p>IATI-XML file saved to " + XMLfilename + "</p>"
+    XMLfilename_html = request.url_root + XMLfilename
+    output += "<p>IATI-XML file saved to <a href=\"" + XMLfilename_html + "\">" + XMLfilename_html + "</a></p>"
     return output
 
 # Process the mapping file and parse the CSV according to those rules, to construct a big list in "iatidata"

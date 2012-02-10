@@ -7,5 +7,80 @@
 <p><label for="csv_url">CSV URL:</label><input type="text" name="csv_url" /></p>
 <p><input type="submit" value="Convert" /></p>
 </form>
+<h2>How to use the conversion API</h2>
+<p><b>POST to this site with two variables:</b></p>
+<ul>
+<li><code>model_url</code> - the URL of your model</li>
+<li><code>csv_url</code> - the URL of your CSV file</li>
+</ul>
+<h2>Model syntax</h2>
+<h2>JSON mapping file</h2>
+<p>There are two sections in the JSON mapping file:</p>
+<ul>
+<li>organisation</li>
+<li>mapping</li>
+</ul><p><strong>Organisation section</strong></p>
+<p>The mapping section should contain:</p>
+
+<ul>
+<li>The reporting organisation data (<tt>reporting-org</tt>)</li>
+<li>The default currency (<tt>default-currency</tt>)</li>
+<li>The default language (<tt>lang</tt>)</li>
+</ul><p><em>Example:</em></p>
+<pre>"organisation": {
+    "reporting-org": {
+        "text": "Oxfam GB",
+        "ref": "GB-CHC-202918",
+        "type": "21"
+    },
+    "default-currency": "GBP",
+    "lang": "en"
+}
+</pre>
+
+<p><strong>Mapping section</strong></p>
+<p>In the JSON mapping file, you create one element per object that you
+want to represent.</p>
+<ul>
+<li>Each object must have a unique name.</li>
+<li>Each object must define the IATI field it relates to (<tt>iati_field</tt>)</li>
+<li>Each object must define whether the source data for the output is a <tt>column</tt> in the CSV file or a <tt>constant</tt> if it is the same value for all entries (<tt>type</tt>)</li>
+
+<li>Objects can also have <em>prefixes</em> (e.g., if the source data contains the project ID you want to use in the <tt>iati-identifier</tt> IATI field, you would prefix it with the reporting organisation's reference. (<tt>prefix</tt>)</li>
+<li>Objects can also be more complicated if they have attributes. In this case you set the <tt>type</tt> to <tt>compound</tt> and create a series of <tt>fields</tt> within that object.</li>
+
+</ul><p><em>Example:</em></p>
+<pre>"mapping": {
+    "title": {
+        "iati_field": "title",
+        "column": "Title Project",
+        "default_value": "",
+        "constant": "",
+        "type": "column"
+    },
+    "iati-identifier": {
+        "iati_field": "iati-identifier",
+        "column": "Project ID",
+        "default_value": "",
+        "constant": "",
+        "type": "column",
+        "prefix":"GB-CHC-202918-"
+    },
+    "recipient-country": {
+        "iati_field": "recipient-country",
+        "fields": {
+            "text": {
+                "type": "column",
+                "column": "Loc of Impact"
+            },
+            "code": {
+                "type": "column",
+                "column": "ISO CODE"
+            }
+        },
+        "type": "compound"
+    }
+}
+</pre>
 {{ pages }}
 {% endblock %}

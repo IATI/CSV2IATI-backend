@@ -1,0 +1,340 @@
+{
+	"organisation": {
+	    "reporting-org": {
+	        "text": "Oxfam GB",
+	        "ref": "GB-CHC-202918",
+	        "type": "21"
+	    },
+		"default-currency": "GBP",
+		"lang": "en"
+	},
+	"mapping": {
+		"title": {
+		    "iati_field": "title",
+			"column": "Title Project",
+			"default_value": "",
+			"constant": "",
+			"type": "column"
+		},
+		"description": {
+		    "iati_field": "description",
+			"column": "Short Descr Project",
+			"default_value": "",
+			"constant": "",
+			"type": "column"
+		},
+		"iati-identifier": {
+		    "iati_field": "iati-identifier",
+			"column": "Project ID",
+			"default_value": "",
+			"constant": "",
+			"type": "column",
+			"prefix":"GB-CHC-202918-"
+		},
+		"recipient-country": {
+		    "iati_field": "recipient-country",
+		    "fields": {
+		        "text": {
+		            "type": "column",
+		            "column": "Loc of Impact"
+		        },
+		        "code": {
+		            "type": "column",
+		            "column": "ISO CODE"
+		        }
+		    },
+			"type": "compound"
+		},
+		"funding-org": {
+		    "iati_field": "participating-org",
+		    "fields": {
+		        "text": {
+		            "type": "constant",
+		            "constant": "Oxfam GB"
+		        },
+		        "ref": {
+		            "type": "constant",
+		            "constant": "GB-CHC-202918"
+		        },
+		        "type": {
+		            "type": "constant",
+		            "constant": "21"
+		        },
+		        "role": {
+		            "type": "constant",
+		            "constant": "funding"
+	            }
+		    },
+			"type": "compound"
+		},
+		"extending-org": {
+		    "iati_field": "participating-org",
+		    "fields": {
+		        "text": {
+		            "type": "constant",
+		            "constant": "Oxfam GB"
+		        },
+		        "ref": {
+		            "type": "constant",
+		            "constant": "GB-CHC-202918"
+		        },
+		        "type": {
+		            "type": "constant",
+		            "constant": "21"
+		        },
+		        "role": {
+		            "type": "constant",
+		            "constant": "extending"
+	            }
+		    },
+			"type": "compound"
+		},
+		"start_date": {
+		    "iati_field": "activity-date",
+		    "fields": {
+		        "type": {
+		            "type":"constant",
+		            "constant": "start-actual"
+		        },
+		        "iso-date": {
+		            "type":"column",
+		            "column": "Project Starts",
+		            "text-transform-type":"date",
+		            "text-transform-format":"%d-%b-%y"
+		        }
+		    },
+		    "type":"compound"
+	    },
+		"end_date": {
+		    "iati_field": "activity-date",
+		    "fields": {
+		        "type": {
+		            "type":"constant",
+		            "constant": "end-planned"
+		        },
+		        "iso-date": {
+		            "type":"column",
+		            "column": "Project Ends",
+		            "text-transform-type":"date",
+		            "text-transform-format":"%d-%b-%y"
+		        }
+		    },
+		    "type":"compound"
+	    },
+		"sector1": {
+		    "iati_field": "sector",
+		    "fields": {
+		        "text": {
+		            "type":"constant",
+		            "constant": "Aim 1: Right to Sustainable Livelihoods"
+		        },
+		        "vocabulary": {
+		            "type":"constant",
+		            "constant": "RO"
+		        },
+		        "code": {
+		            "type":"constant",
+		            "constant": "1"
+		        },
+		        "percentage": {
+		            "type":"column",
+		            "column": "% Aim 1: Right to Sustainable Livelihoods",
+		            "datatype":"float"
+		        }
+		    },
+		    "type":"compound"
+	    },
+		"sector2": {
+		    "iati_field": "sector",
+		    "fields": {
+		        "text": {
+		            "type":"constant",
+		            "constant": "Aim 2: Right to Essential services"
+		        },
+		        "vocabulary": {
+		            "type":"constant",
+		            "constant": "RO"
+		        },
+		        "code": {
+		            "type":"constant",
+		            "constant": "2"
+		        },
+		        "percentage": {
+		            "type":"column",
+		            "column": "% Aim 2: Right to Essential services",
+		            "datatype":"float"
+		        }
+		    },
+		    "type":"compound"
+	    },
+		"sector3": {
+		    "iati_field": "sector",
+		    "fields": {
+		        "text": {
+		            "type":"constant",
+		            "constant": "Aim 3: Right to Life and Security"
+		        },
+		        "vocabulary": {
+		            "type":"constant",
+		            "constant": "RO"
+		        },
+		        "code": {
+		            "type":"constant",
+		            "constant": "3"
+		        },
+		        "percentage": {
+		            "type":"column",
+		            "column": "% Aim 3: Right to Life and Security",
+		            "datatype":"float"
+		        }
+		    },
+		    "type":"compound"
+	    },
+		"sector4": {
+		    "iati_field": "sector",
+		    "fields": {
+		        "text": {
+		            "type":"constant",
+		            "constant": "Aim 4: Right to be heard"
+		        },
+		        "vocabulary": {
+		            "type":"constant",
+		            "constant": "RO"
+		        },
+		        "code": {
+		            "type":"constant",
+		            "constant": "4"
+		        },
+		        "percentage": {
+		            "type":"column",
+		            "column": "% Aim 4: Right to be heard",
+		            "datatype":"float"
+		        }
+		    },
+		    "type":"compound"
+	    },
+		"sector5": {
+		    "iati_field": "sector",
+		    "fields": {
+		        "text": {
+		            "type":"constant",
+		            "constant": "Aim 5: Right to Equity"
+		        },
+		        "vocabulary": {
+		            "type":"constant",
+		            "constant": "RO"
+		        },
+		        "code": {
+		            "type":"constant",
+		            "constant": "5"
+		        },
+		        "percentage": {
+		            "type":"column",
+		            "column": "% Aim 5: Right to Equity",
+		            "datatype":"float"
+		        }
+		    },
+		    "type":"compound"
+	    },
+	    "old_transactions": {
+	        "iati_field":"transaction",
+	        "type":"transaction",
+	        "transaction_data_fields": {
+	            "transaction_type": {
+	                "iati_field":"transaction-type",
+	                "type":"compound",
+	                "fields": {
+	                    "text": {
+	                        "constant":"Expenditure",
+	                        "type":"constant"	                    
+	                    },
+	                    "code": {
+	                        "constant":"E",
+	                        "type":"constant"
+	                    }
+	                }
+	            },
+	            "transaction_value": {
+	                "iati_field":"value",
+	                "type":"compound",
+	                "fields": {
+	                    "text": {
+	                        "column":" Expenditure prior to 2010/11",
+	                        "type":"column",
+	                        "stripchars":","
+	                    },
+	                    "value-date": {
+	                        "constant":"2010-03-31",
+	                        "type":"constant"
+	                    }
+	                }
+	            },
+	            "transaction_date": {
+	                "iati_field":"transaction-date",
+	                "type":"compound",
+	                "fields": {
+	                    "iso-date": {
+	                        "constant":"2010-03-31",
+	                        "type":"constant"
+	                    }
+	                }
+	            },
+	            "description": {
+	                "iati_field":"description",
+	                "type":"constant",
+	                "constant": "Expenditure prior to 2010-03-31"
+	           }
+	        }
+        },
+	    "transactions": {
+	        "iati_field":"transaction",
+	        "type":"transaction",
+	        "transaction_data_fields": {
+	            "transaction_type": {
+	                "iati_field":"transaction-type",
+	                "type":"compound",
+	                "fields": {
+	                    "text": {
+	                        "constant":"Expenditure",
+	                        "type":"constant"	                    
+	                    },
+	                    "code": {
+	                        "constant":"E",
+	                        "type":"constant"
+	                    }
+	                }
+	            },
+	            "transaction_value": {
+	                "iati_field":"value",
+	                "type":"compound",
+	                "fields": {
+	                    "text": {
+	                        "column":"Expenditure in 2010/11",
+	                        "type":"column",
+	                        "stripchars":","
+	                    },
+	                    "value-date": {
+	                        "constant":"2011-03-31",
+	                        "type":"constant"
+	                    }
+	                }
+	            },
+	            "transaction_date": {
+	                "iati_field":"transaction-date",
+	                "type":"compound",
+	                "fields": {
+	                    "iso-date": {
+	                        "constant":"2011-03-31",
+	                        "type":"constant"
+	                    }
+	                }
+	            },
+	            "description": {
+	                "iati_field":"description",
+	                "type":"constant",
+	                "constant":"Expenditure between 2010-04-01 and 2011-03-31"
+	           }
+	        }
+        }
+	}
+}

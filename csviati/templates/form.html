@@ -1,12 +1,20 @@
 {% extends "layout.html" %}
 {% block body %}
 <h2>CSV-IATI Converter</h2>
-<p>Please enter the URLs of your model and your CSV file</p>
+<fieldset>
+<legend>Convert a CSV file</legend>
 <form method="post" action="">
-<p><label for="model_url">Model URL:</label><input type="text" name="model_url" /></p>
-<p><label for="csv_url">CSV URL:</label><input type="text" name="csv_url" /></p>
-<p><input type="submit" value="Convert" /></p>
+<p>Please enter the URLs of your model and your CSV file</p>
+<dl>
+<dt><label for="model_url">Model URL:</label></dt>
+<dd><input type="text" name="model_url" id="model_url" /></dd>
+<dt><label for="csv_url">CSV URL:</label></dt>
+<dd><input type="text" name="csv_url" id="csv_url" /></dd>
+<dt><input type="submit" value="Convert" /></dt>
+</dl>
 </form>
+</fieldset>
+<div class="clearer">&nbsp;</div>
 <h2>How to use the conversion API</h2>
 <p><b>POST to this site with two variables:</b></p>
 <ul>

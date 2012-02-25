@@ -1,3 +1,4 @@
+import sys
 import os
 import urllib2
 import time
@@ -5,18 +6,23 @@ from datetime import date, datetime
 import json
 import csv
 import pprint
+import codecs
+import unicode_dict_reader as udr
 from xml.etree.cElementTree import Element, ElementTree
 from flask import Flask, render_template, flash, request, Markup
 app = Flask(__name__)
 
 # Process the data created in parse_csv()
 def create_IATI_xml(iatidata, dir, o):
+    #iatidata contains the activities
+    #o contains the organisation data
     output = ''
     node = Element('iati-activities')
     node.set("version", "1.0")
     current_datetime = datetime.now().replace(microsecond=0).isoformat()
     node.set("generated-datetime",current_datetime)
     for activity in iatidata:
+        #for each activity, create one <iati-activity>
         a = Element("iati-activity")
         a.set("xml:lang", o["lang"])
         a.set("default-currency", o["default-currency"])
@@ -28,7 +34,9 @@ def create_IATI_xml(iatidata, dir, o):
         ro.text = o["reporting-org"]["text"]
         a.append(ro)
         for field in activity:
+        #e.g. activity['activity-date']
             for key, val in field.items():
+            #e.g. activity['activity-date']['fields']
                 if key == "transaction":
                     transactions = Element("transaction")
                     a.append(transactions)
@@ -36,37 +44,17 @@ def create_IATI_xml(iatidata, dir, o):
                         transaction_field = Element(trans_data)
                         for attrib, attrib_value in trans_data_value.items():
                             if (attrib == 'text'):
-                                try:
-                                    attrib_value.decode('ascii')
-                                except UnicodeDecodeError:
-                                    transaction_field.text = attrib_value
-                                else:
-                                    transaction_field.text = attrib_value
+                                transaction_field.text = attrib_value
                             else:
-                                try:
-                                    str(attrib_value).decode('ascii')
-                                except UnicodeDecodeError:
-                                    transaction_field.set(attrib, unicode(str(attrib_value), "utf-8"))
-                                else:
-                                    transaction_field.set(attrib, str(attrib_value))
+                                transaction_field.set(attrib, str(attrib_value))
                         transactions.append(transaction_field)
                 else:
                     key = Element(key)
                     for attrib, attrib_value in val.items():
                         if (attrib == 'text'):
-                            try:
-                                attrib_value.decode('ascii')
-                            except UnicodeDecodeError:
-                                key.text = unicode(attrib_value, "utf-8")
-                            else:
-                                key.text = attrib_value
+                            key.text = attrib_value
                         else:
-                            try:
-                                str(attrib_value).decode('ascii')
-                            except UnicodeDecodeError:
-                                key.set(attrib, unicode(str(attrib_value), "utf-8"))
-                            else:
-                                key.set(attrib, str(attrib_value))
+                            key.set(attrib, str(attrib_value))
                     a.append(key)
     doc = ElementTree(node)        
     XMLfilename = dir + '/' + str(time.time()) + '.xml'
@@ -79,7 +67,7 @@ def create_IATI_xml(iatidata, dir, o):
 def parse_csv(dir):
     output = ''
     csvfile = open(dir + '/csv.csv', 'r')
-    csvdata=csv.DictReader(csvfile)
+    csvdata=udr.UnicodeDictReader(csvfile)
     jsonfile = open(dir + '/json.json', 'r')
     jsondata = json.loads(jsonfile.read())
     
@@ -89,19 +77,26 @@ def parse_csv(dir):
     # Look in mapping section of JSON file for IATI fields, construct a dict from that.
     m = jsondata["mapping"]
     
+    #iatidata will contain all of the data from the CSV file plus the mapping
     iatidata = []
     for line in csvdata:
+        #linedata will contain one line of data (one activity, if the data structure is one line per activity)
         linedata = []
         try:
             for field in m:
+                #field = the dimension in the JSON mapping file. This can be anything as long as it's unique within the JSON.
                 fielddata= {}
-                iati_field = m[field]["iati_field"]
+                #fielddata = the hash to contain all of this dimension's data
+                iati_field = m[field]["iati-field"]
+                #iati_field contains the name of the IATI field this dimension should output.
                 fielddata[iati_field] = {}
-                # if it's a compound field, then get the different elements ...
-                # NB if a field has no text, then it must be a compound field, even if it only has one attribute ...
-                if (m[field]["type"] == "compound"):
+                
+                # NB all input has to be either as a compound field or as a transaction field, with multiple items in 'field'
+                # if the dimension (field) is of datatype compound:
+                if (m[field]["datatype"] == "compound"):
                     for part in m[field]["fields"]:
-                        if (m[field]["fields"][part]["type"] == 'constant'):
+                        # in the dimension mapping, the variable 'part' is called 'field'. Should probably make this more consistent...
+                        if (m[field]["fields"][part]["datatype"] == 'constant'):
                             fielddata[iati_field][part] = m[field]["fields"][part]["constant"]
                         else:
                             part_column = m[field]["fields"][part]["column"]
@@ -113,7 +108,6 @@ def parse_csv(dir):
                                 except:
                                     fielddata[iati_field][part] = '0'
                             else:
-                            
                                 if (m[field]["fields"][part].has_key("text-transform-type")):
                                     if (m[field]["fields"][part]["text-transform-type"] == "date"):
                                         text_transform_format = m[field]["fields"][part]["text-transform-format"]
@@ -129,69 +123,24 @@ def parse_csv(dir):
                                     fielddata[iati_field][part] = line[part_column].strip()
                             del part_column
                 # it's transaction data, so break it down
-                elif (m[field]["type"] == "transaction"):
-                    iati_field = m[field]["iati_field"]
+                elif (m[field]["datatype"] == "transaction"):
+                    iati_field = m[field]["iati-field"]
                     fielddata[iati_field] = {}
-                    # got e.g. transaction type
-                    for transactionfield in m[field]["transaction_data_fields"]:
-                        transaction_iati_field = m[field]["transaction_data_fields"][transactionfield]["iati_field"]
+                    # got each transaction field...
+                    for transactionfield in m[field]["tdatafields"]:
+                        transaction_iati_field = m[field]["tdatafields"][transactionfield]["iati-field"]
                         fielddata[iati_field][transaction_iati_field] = {}
-                        if (m[field]["transaction_data_fields"][transactionfield]["type"] == "compound"):
-                            # got e.g. transaction type code
-                            for part in m[field]["transaction_data_fields"][transactionfield]["fields"]:
-                                if (m[field]["transaction_data_fields"][transactionfield]["fields"][part]["type"] == 'constant'):
-                                    fielddata[iati_field][transaction_iati_field][part] = m[field]["transaction_data_fields"][transactionfield]["fields"][part]["constant"]
+                        # 
+                        for part in m[field]["tdatafields"][transactionfield]["fields"]:
+                            if (m[field]["tdatafields"][transactionfield]["fields"][part]["datatype"] == 'constant'):
+                                fielddata[iati_field][transaction_iati_field][part] = m[field]["tdatafields"][transactionfield]["fields"][part]["constant"]
+                            else:
+                                part_column = m[field]["tdatafields"][transactionfield]["fields"][part]["column"]
+                                if (m[field]["tdatafields"][transactionfield]["fields"][part]).has_key("stripchars"):
+                                    fielddata[iati_field][transaction_iati_field][part] = (line[part_column].strip().replace(m[field]["tdatafields"][transactionfield]["fields"][part]["stripchars"], ""))
                                 else:
-                                    part_column = m[field]["transaction_data_fields"][transactionfield]["fields"][part]["column"]
-                                    if (m[field]["transaction_data_fields"][transactionfield]["fields"][part]).has_key("stripchars"):
-                                        fielddata[iati_field][transaction_iati_field][part] = (line[part_column].strip().replace(m[field]["transaction_data_fields"][transactionfield]["fields"][part]["stripchars"], ""))
-                                    else:
-                                        fielddata[iati_field][transaction_iati_field][part] = line[part_column]
-                                    del part_column
-                        else:
-                            # it's a text field within the transaction...
-                            if (m[field]["transaction_data_fields"][transactionfield]["type"] == "column"):
-                                field_column = m[field]["transaction_data_fields"][transactionfield]["column"]
-                            else:
-                                field_constant = m[field]["transaction_data_fields"][transactionfield]["constant"]
-                            try:
-                                fielddata[iati_field][transaction_iati_field]["text"] = prefix + line[field_column]
-                            except NameError:
-                                fielddata[iati_field][transaction_iati_field]["text"] = field_constant
-                            
-                else:
-                    # otherwise, it's just a text field ...
-                    if (m[field].has_key("prefix")):
-                        prefix = m[field]["prefix"]
-                    else:
-                        prefix = ""
-                    if (m[field].has_key("text-transform-type")):
-                        if (m[field]["text-transform-type"] == "date"):
-                            if (m[field]["type"] == "column"):
-                                field_column = m[field]["column"].strip()
-                            else:
-                                field_constant = m[field]["constant"]
-                            try:
-                                thedata = prefix + line[field_column].strip()
-                            except NameError:
-                                thedata = field_constant.strip()
-                            text_transform_format = m[field]["text-transform-format"]
-                            try:
-                                newdate = datetime.strptime(thedata, text_transform_format).strftime("%Y-%m-%d")
-                                fielddata[iati_field]["text"] = str(newdate)
-                                
-                            except ValueError, e:
-                                print "Failed to convert date:",e
-                                pass
-                    else:
-                        if (m[field]["type"] == "column"):
-                            field_column = m[field]["column"]
-                        else:
-                            field_constant = m[field]["constant"]
-                        try:
-                            fielddata[iati_field]["text"] = prefix + line[field_column].strip()
-                        except NameError:
-                            fielddata[iati_field]["text"] = field_constant.strip()
+                                    fielddata[iati_field][transaction_iati_field][part] = line[part_column]
+                                del part_column
                 try:
                     del field_column 
                     del field_constant
@@ -278,4 +227,8 @@ def showPostForm():
 app.secret_key = ')MrYYKq#!xXxrbkWmHJPRQiZhRL@1Te_:cgg`wyp83ac4KZ}A3tuJ*9{o)(*+4)'
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    if (len(sys.argv) > 1):
+        port = int(sys.argv[1])
+        app.run(debug=True,port=port)
+    else:
+        app.run(debug=True,port=5001)

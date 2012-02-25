@@ -1,0 +1,376 @@
+{
+  "organisation": {
+    "reporting-org": {
+      "text": "Oxfam GB",
+      "ref": "GB-CHC-202918",
+      "type": "21"
+    },
+    "default-currency": "GBP",
+    "lang": "en"
+  },
+  "mapping": {
+    "title": {
+      "iati-field": "title",
+      "label": "Title",
+      "default-value": "",
+      "fields": {
+        "text": {
+          "datatype": "column",
+          "column": "Title Project"
+        }
+      },
+      "datatype": "compound"
+    },
+    "description": {
+      "iati-field": "description",
+      "default-value": "",
+      "label": "Description",
+      "fields": {
+        "text": {
+          "datatype": "column",
+          "column": "Short Descr Project"
+        }
+      },
+      "datatype": "compound"
+    },
+    "iati-identifier": {
+      "iati-field": "iati-identifier",
+      "default-value": "",
+      "prefix": "GB-CHC-202918-",
+      "label": "IATI Identifier",
+      "fields": {
+        "text": {
+          "datatype": "column",
+          "column": "Project ID"
+        }
+      },
+      "datatype": "compound"
+    },
+    "recipient-country": {
+      "iati-field": "recipient-country",
+      "fields": {
+        "text": {
+          "datatype": "column",
+          "column": "Loc of Impact"
+        },
+        "code": {
+          "datatype": "column",
+          "column": "ISO CODE"
+        }
+      },
+      "label": "Recipient Country",
+      "datatype": "compound"
+    },
+    "funding-org": {
+      "iati-field": "participating-org",
+      "fields": {
+        "text": {
+          "datatype": "constant",
+          "constant": "Oxfam GB"
+        },
+        "ref": {
+          "datatype": "constant",
+          "constant": "GB-CHC-202918"
+        },
+        "datatype": {
+          "datatype": "constant",
+          "constant": "21"
+        },
+        "role": {
+          "datatype": "constant",
+          "constant": "funding"
+        }
+      },
+      "label": "Funding organisation",
+      "datatype": "compound"
+    },
+    "extending-org": {
+      "iati-field": "participating-org",
+      "fields": {
+        "text": {
+          "datatype": "constant",
+          "constant": "Oxfam GB"
+        },
+        "ref": {
+          "datatype": "constant",
+          "constant": "GB-CHC-202918"
+        },
+        "datatype": {
+          "datatype": "constant",
+          "constant": "21"
+        },
+        "role": {
+          "datatype": "constant",
+          "constant": "extending"
+        }
+      },
+      "label": "Extending organisation",
+      "datatype": "compound"
+    },
+    "start-date": {
+      "iati-field": "activity-date",
+      "fields": {
+        "datatype": {
+          "datatype": "constant",
+          "constant": "start-actual"
+        },
+        "iso-date": {
+          "datatype": "column",
+          "column": "Project Starts",
+          "text-transform-type": "date",
+          "text-transform-format": "%d-%b-%y"
+        }
+      },
+      "label": "Start date",
+      "datatype": "compound"
+    },
+    "end-date": {
+      "iati-field": "activity-date",
+      "fields": {
+        "datatype": {
+          "datatype": "constant",
+          "constant": "end-planned"
+        },
+        "iso-date": {
+          "datatype": "column",
+          "column": "Project Ends",
+          "text-transform-type": "date",
+          "text-transform-format": "%d-%b-%y"
+        }
+      },
+      "label": "End date",
+      "datatype": "compound"
+    },
+    "sector1": {
+      "iati-field": "sector",
+      "fields": {
+        "text": {
+          "datatype": "constant",
+          "constant": "Aim 1: Right to Sustainable Livelihoods"
+        },
+        "vocabulary": {
+          "datatype": "constant",
+          "constant": "RO"
+        },
+        "code": {
+          "datatype": "constant",
+          "constant": "1"
+        },
+        "percentage": {
+          "datatype": "float",
+          "column": "% Aim 1: Right to Sustainable Livelihoods"
+        }
+      },
+      "label": "Sector 1",
+      "datatype": "compound"
+    },
+    "sector2": {
+      "iati-field": "sector",
+      "fields": {
+        "text": {
+          "datatype": "constant",
+          "constant": "Aim 2: Right to Essential services"
+        },
+        "vocabulary": {
+          "datatype": "constant",
+          "constant": "RO"
+        },
+        "code": {
+          "datatype": "constant",
+          "constant": "2"
+        },
+        "percentage": {
+          "datatype": "float",
+          "column": "% Aim 2: Right to Essential services"
+        }
+      },
+      "label": "Sector 2",
+      "datatype": "compound"
+    },
+    "sector3": {
+      "iati-field": "sector",
+      "fields": {
+        "text": {
+          "datatype": "constant",
+          "constant": "Aim 3: Right to Life and Security"
+        },
+        "vocabulary": {
+          "datatype": "constant",
+          "constant": "RO"
+        },
+        "code": {
+          "datatype": "constant",
+          "constant": "3"
+        },
+        "percentage": {
+          "datatype": "float",
+          "column": "% Aim 3: Right to Life and Security"
+        }
+      },
+      "label": "Sector 3",
+      "datatype": "compound"
+    },
+    "sector4": {
+      "iati-field": "sector",
+      "fields": {
+        "text": {
+          "datatype": "constant",
+          "constant": "Aim 4: Right to be heard"
+        },
+        "vocabulary": {
+          "datatype": "constant",
+          "constant": "RO"
+        },
+        "code": {
+          "datatype": "constant",
+          "constant": "4"
+        },
+        "percentage": {
+          "datatype": "float",
+          "column": "% Aim 4: Right to be heard"
+        }
+      },
+      "label": "Sector 4",
+      "datatype": "compound"
+    },
+    "sector5": {
+      "iati-field": "sector",
+      "fields": {
+        "text": {
+          "datatype": "constant",
+          "constant": "Aim 5: Right to Equity"
+        },
+        "vocabulary": {
+          "datatype": "constant",
+          "constant": "RO"
+        },
+        "code": {
+          "datatype": "constant",
+          "constant": "5"
+        },
+        "percentage": {
+          "datatype": "float",
+          "column": "% Aim 5: Right to Equity"
+        }
+      },
+      "label": "Sector 5",
+      "datatype": "compound"
+    },
+    "old-transactions": {
+      "label": "Old transaction",
+      "iati-field": "transaction",
+      "datatype": "transaction",
+      "tdatafields": {
+        "transaction-type": {
+          "iati-field": "transaction-type",
+          "datatype": "compound",
+          "fields": {
+            "text": {
+              "constant": "Expenditure",
+              "datatype": "constant"
+            },
+            "code": {
+              "constant": "E",
+              "datatype": "constant"
+            }
+          }
+        },
+        "transaction-value": {
+          "iati-field": "value",
+          "datatype": "compound",
+          "fields": {
+            "text": {
+              "column": " Expenditure prior to 2010/11",
+              "datatype": "column",
+              "stripchars": ","
+            },
+            "value-date": {
+              "constant": "2010-03-31",
+              "datatype": "constant"
+            }
+          }
+        },
+        "transaction-date": {
+          "iati-field": "transaction-date",
+          "datatype": "compound",
+          "fields": {
+            "iso-date": {
+              "constant": "2010-03-31",
+              "datatype": "constant"
+            }
+          }
+        },
+        "description": {
+          "iati-field": "description",
+          "datatype": "compound",
+          "fields": {
+            "text": {
+                "constant": "Expenditure prior to 2010-03-31",
+                "datatype": "constant"
+            }
+          }
+        }
+      }
+    },
+    "transactions": {
+      "label": "Transaction",
+      "iati-field": "transaction",
+      "datatype": "transaction",
+      "tdatafields": {
+        "transaction-type": {
+          "label": "Transaction type",
+          "iati-field": "transaction-type",
+          "datatype": "compound",
+          "fields": {
+            "text": {
+              "constant": "Expenditure",
+              "datatype": "constant"
+            },
+            "code": {
+              "constant": "E",
+              "datatype": "constant"
+            }
+          }
+        },
+        "transaction-value": {
+          "label": "Transaction value",
+          "iati-field": "value",
+          "datatype": "compound",
+          "fields": {
+            "text": {
+              "column": "Expenditure in 2010/11",
+              "datatype": "column",
+              "stripchars": ","
+            },
+            "value-date": {
+              "constant": "2011-03-31",
+              "datatype": "constant"
+            }
+          }
+        },
+        "transaction-date": {
+          "label": "Transaction date",
+          "iati-field": "transaction-date",
+          "datatype": "compound",
+          "fields": {
+            "iso-date": {
+              "constant": "2011-03-31",
+              "datatype": "constant"
+            }
+          }
+        },
+        "description": {
+          "label": "Transaction description",
+          "iati-field": "description",
+          "datatype": "compound",
+          "fields": {
+            "text": {
+              "constant": "Expenditure between 2010-04-01 and 2011-03-31",
+              "datatype": "constant"
+            }
+          }
+        }
+      }
+    }
+  }
+}

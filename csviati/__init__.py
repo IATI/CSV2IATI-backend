@@ -186,8 +186,6 @@ def get_files():
         modelfile = request.form['model_url']
         dir = 'static/' + str(date.today())
         output = ''
-        import os
-        return os.getcwd()
         if not os.path.exists(dir):
             try:
                 os.makedirs(dir)

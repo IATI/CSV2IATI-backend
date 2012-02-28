@@ -187,7 +187,7 @@ def get_files():
         dir = 'static/' + str(date.today())
         output = ''
         import os
-        return os.path.dirname(os.path.abspath(__file__))
+        os.getcwd()
         if not os.path.exists(dir):
             try:
                 os.makedirs(dir)

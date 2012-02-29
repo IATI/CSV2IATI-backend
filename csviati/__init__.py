@@ -109,7 +109,11 @@ def parse_csv(dir):
                 #field = the dimension in the JSON mapping file. This can be anything as long as it's unique within the JSON.
                 fielddata= {}
                 #fielddata = the hash to contain all of this dimension's data
-                iati_field = m[field]["iati-field"]
+                try:                   
+                    iati_field = m[field]["iati-field"]
+                except KeyError:
+                    type, value, tb = sys.exc_info()
+                    return "%s" % value.message
                 #iati_field contains the name of the IATI field this dimension should output.
                 fielddata[iati_field] = {}
                 
@@ -172,7 +176,8 @@ def parse_csv(dir):
                 linedata.append(fielddata)
             iatidata.append(linedata)
         except KeyError, e:
-            raise Exception("Unknown column: ", e)
+            type, value, tb = sys.exc_info()
+            return "ERROR: No such field: %s" % value.message
     flash("Parsed files", 'good')
     output += create_IATI_xml(iatidata, dir, o)
     return output

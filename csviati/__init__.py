@@ -16,7 +16,7 @@ app = Flask(__name__)
 
 def makeUnicode(data,encoding):
     try:
-        nicedata = unicode(data, encoding=encoding)
+        nicedata = unicode(data, encoding=encoding, errors='ignore')
     except TypeError:
         nicedata = data
     # from http://boodebr.org/main/python/all-about-python-and-unicode#UNI_XML

@@ -8,9 +8,27 @@ import csv
 import pprint
 import codecs
 import unicode_dict_reader as udr
+import re
 from xml.etree.cElementTree import Element, ElementTree
 from flask import Flask, render_template, flash, request, Markup
 app = Flask(__name__)
+
+
+def makeUnicode(data,encoding):
+    try:
+        nicedata = unicode(data, encoding=encoding)
+    except TypeError:
+        nicedata = data
+    # from http://boodebr.org/main/python/all-about-python-and-unicode#UNI_XML
+    RE_XML_ILLEGAL = u'([\u0000-\u0008\u000b-\u000c\u000e-\u001f\ufffe-\uffff])' + \
+                     u'|' + \
+                     u'([%s-%s][^%s-%s])|([^%s-%s][%s-%s])|([%s-%s]$)|(^[%s-%s])' % \
+                      (unichr(0xd800),unichr(0xdbff),unichr(0xdc00),unichr(0xdfff),
+                       unichr(0xd800),unichr(0xdbff),unichr(0xdc00),unichr(0xdfff),
+                       unichr(0xd800),unichr(0xdbff),unichr(0xdc00),unichr(0xdfff))
+    x = nicedata
+    x = re.sub(RE_XML_ILLEGAL, "?", nicedata)
+    return x
 
 # Process the data created in parse_csv()
 def create_IATI_xml(iatidata, dir, o):
@@ -21,6 +39,7 @@ def create_IATI_xml(iatidata, dir, o):
     node.set("version", "1.0")
     current_datetime = datetime.now().replace(microsecond=0).isoformat()
     node.set("generated-datetime",current_datetime)
+    character_encoding = o["data-encoding"]
     for activity in iatidata:
         #for each activity, create one <iati-activity>
         a = Element("iati-activity")
@@ -67,7 +86,7 @@ def create_IATI_xml(iatidata, dir, o):
 def parse_csv(dir):
     output = ''
     csvfile = open(dir + '/csv.csv', 'r')
-    csvdata=udr.UnicodeDictReader(csvfile)
+    csvdata=csv.DictReader(csvfile)
     jsonfile = open(dir + '/json.json', 'r')
     jsondata = json.loads(jsonfile.read())
     
@@ -76,6 +95,9 @@ def parse_csv(dir):
     
     # Look in mapping section of JSON file for IATI fields, construct a dict from that.
     m = jsondata["mapping"]
+    
+    # Look in organisation section of JSON file for character encoding
+    character_encoding = jsondata["organisation"]["data-encoding"]
     
     #iatidata will contain all of the data from the CSV file plus the mapping
     iatidata = []
@@ -111,7 +133,7 @@ def parse_csv(dir):
                                 if (m[field]["fields"][part].has_key("text-transform-type")):
                                     if (m[field]["fields"][part]["text-transform-type"] == "date"):
                                         text_transform_format = m[field]["fields"][part]["text-transform-format"]
-                                        thedata = line[part_column].strip()
+                                        thedata = makeUnicode(line[makeUnicode(part_column,encoding=character_encoding)], encoding=character_encoding).strip()
                                         try:
                                             newdate = datetime.strptime(thedata, text_transform_format).strftime("%Y-%m-%d")
                                             fielddata[iati_field][part] = str(newdate)
@@ -120,7 +142,7 @@ def parse_csv(dir):
                                             output += "Failed to convert date:", e
                                             pass
                                 else:
-                                    fielddata[iati_field][part] = line[part_column].strip()
+                                    fielddata[iati_field][part] = makeUnicode(line[makeUnicode(part_column,encoding=character_encoding)], encoding=character_encoding).strip()
                             del part_column
                 # it's transaction data, so break it down
                 elif (m[field]["datatype"] == "transaction"):
@@ -137,9 +159,9 @@ def parse_csv(dir):
                             else:
                                 part_column = m[field]["tdatafields"][transactionfield]["fields"][part]["column"]
                                 if (m[field]["tdatafields"][transactionfield]["fields"][part]).has_key("stripchars"):
-                                    fielddata[iati_field][transaction_iati_field][part] = (line[part_column].strip().replace(m[field]["tdatafields"][transactionfield]["fields"][part]["stripchars"], ""))
+                                    fielddata[iati_field][transaction_iati_field][part] = (makeUnicode(line[makeUnicode(part_column,encoding=character_encoding)].strip().replace(m[field]["tdatafields"][transactionfield]["fields"][part]["stripchars"], ""),encoding=character_encoding))
                                 else:
-                                    fielddata[iati_field][transaction_iati_field][part] = line[part_column]
+                                    fielddata[iati_field][transaction_iati_field][part] = (makeUnicode(line[makeUnicode(part_column,encoding=character_encoding)],encoding=character_encoding))
                                 del part_column
                 try:
                     del field_column 

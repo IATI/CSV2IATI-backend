@@ -84,7 +84,6 @@ def create_IATI_xml(iatidata, dir, o):
 
 # Process the mapping file and parse the CSV according to those rules, to construct a big list in "iatidata"
 def parse_csv(dir):
-    output = ''
     csvfile = open(dir + '/csv.csv', 'r')
     csvdata=csv.DictReader(csvfile)
     jsonfile = open(dir + '/json.json', 'r')
@@ -99,90 +98,185 @@ def parse_csv(dir):
     # Look in organisation section of JSON file for character encoding
     character_encoding = jsondata["organisation"]["data-encoding"]
     
+    # Handle multiple data structure
+    if (("multiple" in o["data-structure"]) and (o["data-structure"]["multiple"] != "")):
+        # if mapping has stated that there are multiple rows per sector (etc.), then collect all the iati-identifiers together
+        iati_identifiers = set([])
+        iati_identifiers_grouped_csvdata = {}
+        for field in m:
+            if (m[field]["iati-field"]=='iati-identifier'):
+                column = m[field]["fields"]["text"]["column"]
+                for line in csvdata:
+                    iati_identifiers.add(line[column])
+                    if (not(line[column] in iati_identifiers_grouped_csvdata)):
+                        iati_identifiers_grouped_csvdata[line[column]] = []
+                    iati_identifiers_grouped_csvdata[line[column]].append(line)
+                    """ this creates, for each unique project ID, something like this (assuming project ID is 'PROJECT_1')
+                     iati_identifiers_grouped_csvdata = {
+                         'PROJECT_1' : [
+                             "project ID" = "PROJECT_1",
+                             "title" = "My project title",
+                             "sector_name" = "First sector"
+                         ],
+                         'PROJECT_1' : [
+                             "project ID" = "PROJECT_1",
+                             "title" = "My project title",
+                             "sector_name" = "Second sector"
+                         ]
+                        }
+                    """
+        
+
+        multiple_fields = o["data-structure"]["multiple"]
+        return get_csv_data(m, o, character_encoding, iati_identifiers_grouped_csvdata, dir, multiple_fields)
+        """for line in iati_identifiers_grouped_csvdata[iati_identifier]:
+            # write everything into the array. for the multiple field, just add a number to that field.
+            return str(line)
+        """
+                
+    # Handle single data structure
+    else:
+        return get_csv_data(m, o, character_encoding, csvdata, dir)
+        
+def get_csv_data(m, o, character_encoding, csvdata, dir, multiple_field=''):
+    output = ''
     #iatidata will contain all of the data from the CSV file plus the mapping
     iatidata = []
-    for line in csvdata:
-        #linedata will contain one line of data (one activity, if the data structure is one line per activity)
-        linedata = []
-        try:
-            for field in m:
-                #field = the dimension in the JSON mapping file. This can be anything as long as it's unique within the JSON.
-                fielddata= {}
-                #fielddata = the hash to contain all of this dimension's data
-                try:                   
-                    iati_field = m[field]["iati-field"]
-                except KeyError:
-                    type, value, tb = sys.exc_info()
-                    return "%s" % value.message
-                #iati_field contains the name of the IATI field this dimension should output.
-                fielddata[iati_field] = {}
-                
-                # NB all input has to be either as a compound field or as a transaction field, with multiple items in 'field'
-                # if the dimension (field) is of datatype compound:
-                if (m[field]["datatype"] == "compound"):
-                    for part in m[field]["fields"]:
-                        # in the dimension mapping, the variable 'part' is called 'field'. Should probably make this more consistent...
-                        if (m[field]["fields"][part]["datatype"] == 'constant'):
-                            fielddata[iati_field][part] = m[field]["fields"][part]["constant"]
-                        else:
-                            part_column = m[field]["fields"][part]["column"]
-                            if ((m[field]["fields"][part].has_key("datatype")) and (m[field]["fields"][part]["datatype"] == 'float')):
-                                try:
-                                    fielddata[iati_field][part] = float(line[part_column])
-                                    if (str(float(line[part_column])) == '-0.0'):
-                                        fielddata[iati_field][part] = '0'
-                                except:
-                                    fielddata[iati_field][part] = '0'
-                            else:
-                                if (m[field]["fields"][part].has_key("text-transform-type")):
-                                    if (m[field]["fields"][part]["text-transform-type"] == "date"):
-                                        text_transform_format = m[field]["fields"][part]["text-transform-format"]
-                                        thedata = makeUnicode(line[makeUnicode(part_column,encoding=character_encoding)], encoding=character_encoding).strip()
-                                        try:
-                                            newdate = datetime.strptime(thedata, text_transform_format).strftime("%Y-%m-%d")
-                                            fielddata[iati_field][part] = str(newdate)
-                                            
-                                        except ValueError, e:
-                                            output += "Failed to convert date:", e
-                                            pass
-                                else:
-                                    fielddata[iati_field][part] = makeUnicode(line[makeUnicode(part_column,encoding=character_encoding)], encoding=character_encoding).strip()
-                            del part_column
-                # it's transaction data, so break it down
-                elif (m[field]["datatype"] == "transaction"):
-                    iati_field = m[field]["iati-field"]
-                    fielddata[iati_field] = {}
-                    # got each transaction field...
-                    for transactionfield in m[field]["tdatafields"]:
-                        transaction_iati_field = m[field]["tdatafields"][transactionfield]["iati-field"]
-                        fielddata[iati_field][transaction_iati_field] = {}
-                        # 
-                        for part in m[field]["tdatafields"][transactionfield]["fields"]:
-                            if (m[field]["tdatafields"][transactionfield]["fields"][part]["datatype"] == 'constant'):
-                                fielddata[iati_field][transaction_iati_field][part] = m[field]["tdatafields"][transactionfield]["fields"][part]["constant"]
-                            else:
-                                part_column = m[field]["tdatafields"][transactionfield]["fields"][part]["column"]
-                                if (m[field]["tdatafields"][transactionfield]["fields"][part]).has_key("stripchars"):
-                                    fielddata[iati_field][transaction_iati_field][part] = (makeUnicode(line[makeUnicode(part_column,encoding=character_encoding)].strip().replace(m[field]["tdatafields"][transactionfield]["fields"][part]["stripchars"], ""),encoding=character_encoding))
-                                else:
-                                    fielddata[iati_field][transaction_iati_field][part] = (makeUnicode(line[makeUnicode(part_column,encoding=character_encoding)],encoding=character_encoding))
-                                del part_column
+    if (multiple_field):
+        # for each unique iati identifier...
+        for csvdata_group, csvdata_items in csvdata.items():
+            # for each group, create a line of data
+            linedata = []
+            already_got_project_data = False
+            """
+            # csvdata_group is the name of the identifier
+            # csvdata_items is the name of all the items within that identifier (each row in the individual spreadsheet)
+            
+            # loop through the items.
+            # take all of the properties from the first item. Add the properties for each row for the multiple_field field.
+            """
+                        
+            for line in csvdata_items:
+                # for each row in the bundle of activities...
+                # this is equivalent to "for line in csvdata"
+                #
+                # send to get_field_data, and therefore add to fielddata, if:
+                # a) it's the first row in this group, or
+                # b) the iati field is equal to the multiple fields field
                 try:
-                    del field_column 
-                    del field_constant
-                    #del fielddata[iati_field]
-                except:
-                    pass
-                linedata.append(fielddata)
+                    # for each dimension in the mapping file...
+                    for field in m:
+                        #field = the dimension in the JSON mapping file. This can be anything as long as it's unique within the JSON.
+                        try:
+                            iati_field = m[field]["iati-field"]
+                        except KeyError:
+                            type, value, tb = sys.exc_info()
+                            return "%s" % value.message
+                        #iati_field contains the name of the IATI field this dimension should output.
+                        if ((not already_got_project_data) or (iati_field == multiple_field)):
+                            fielddata = get_field_data(iati_field, field, m, line, character_encoding)
+                            linedata.append(fielddata)
+                except KeyError, e:
+                    type, value, tb = sys.exc_info()
+                    return "ERROR: No such field: %s" % value.message
+                # End of this row within the activity group... got the first row
+                already_got_project_data = True
+            # Finished this activity group, so write the activity
             iatidata.append(linedata)
-        except KeyError, e:
-            type, value, tb = sys.exc_info()
-            return "ERROR: No such field: %s" % value.message
+        """ 
+        csvdata will look slightly differently, as it will be grouped by unique iati identifiers
+        for line in csvdata will get you the group
+            for csvdata_item in csvdata will get you an individual row from the spreadsheet
+        """
+    else:
+        for line in csvdata:
+            #linedata will contain one line of data (one activity)
+            linedata = []
+            try:
+                # for each dimension in the mapping file...
+                for field in m:
+                    #field = the dimension in the JSON mapping file. This can be anything as long as it's unique within the JSON.
+                    try:                   
+                        iati_field = m[field]["iati-field"]
+                    except KeyError:
+                        type, value, tb = sys.exc_info()
+                        return "%s" % value.message
+                    #iati_field contains the name of the IATI field this dimension should output.
+
+                    fielddata = get_field_data(iati_field, field, m, line, character_encoding)
+                    linedata.append(fielddata)
+                iatidata.append(linedata)
+            except KeyError, e:
+                type, value, tb = sys.exc_info()
+                return "ERROR: No such field: %s" % value.message
     flash("Parsed files", 'good')
     output += create_IATI_xml(iatidata, dir, o)
     return output
  
-# Save the fiels received
+def get_field_data(iati_field, field, m, line, character_encoding):
+    fielddata= {}
+    #fielddata = the hash to contain all of this dimension's data
+    fielddata[iati_field] = {}
+    
+    # NB all input has to be either as a compound field or as a transaction field, with multiple items in 'field'
+    # if the dimension (field) is of datatype compound:
+    if (m[field]["datatype"] == "compound"):
+        for part in m[field]["fields"]:
+            # in the dimension mapping, the variable 'part' is called 'field'. Should probably make this more consistent...
+            if (m[field]["fields"][part]["datatype"] == 'constant'):
+                fielddata[iati_field][part] = m[field]["fields"][part]["constant"]
+            else:
+                part_column = m[field]["fields"][part]["column"]
+                if ((m[field]["fields"][part].has_key("datatype")) and (m[field]["fields"][part]["datatype"] == 'float')):
+                    try:
+                        fielddata[iati_field][part] = float(line[part_column])
+                        if (str(float(line[part_column])) == '-0.0'):
+                            fielddata[iati_field][part] = '0'
+                    except:
+                        fielddata[iati_field][part] = '0'
+                else:
+                    if (m[field]["fields"][part].has_key("text-transform-type")):
+                        if (m[field]["fields"][part]["text-transform-type"] == "date"):
+                            text_transform_format = m[field]["fields"][part]["text-transform-format"]
+                            thedata = makeUnicode(line[makeUnicode(part_column,encoding=character_encoding)], encoding=character_encoding).strip()
+                            try:
+                                newdate = datetime.strptime(thedata, text_transform_format).strftime("%Y-%m-%d")
+                                fielddata[iati_field][part] = str(newdate)
+                                
+                            except ValueError, e:
+                                output += "Failed to convert date:", e
+                                pass
+                    else:
+                        fielddata[iati_field][part] = makeUnicode(line[makeUnicode(part_column,encoding=character_encoding)], encoding=character_encoding).strip()
+                del part_column
+    # it's transaction data, so break it down
+    elif (m[field]["datatype"] == "transaction"):
+        iati_field = m[field]["iati-field"]
+        fielddata[iati_field] = {}
+        # got each transaction field...
+        for transactionfield in m[field]["tdatafields"]:
+            transaction_iati_field = m[field]["tdatafields"][transactionfield]["iati-field"]
+            fielddata[iati_field][transaction_iati_field] = {}
+            # 
+            for part in m[field]["tdatafields"][transactionfield]["fields"]:
+                if (m[field]["tdatafields"][transactionfield]["fields"][part]["datatype"] == 'constant'):
+                    fielddata[iati_field][transaction_iati_field][part] = m[field]["tdatafields"][transactionfield]["fields"][part]["constant"]
+                else:
+                    part_column = m[field]["tdatafields"][transactionfield]["fields"][part]["column"]
+                    if (m[field]["tdatafields"][transactionfield]["fields"][part]).has_key("stripchars"):
+                        fielddata[iati_field][transaction_iati_field][part] = (makeUnicode(line[makeUnicode(part_column,encoding=character_encoding)].strip().replace(m[field]["tdatafields"][transactionfield]["fields"][part]["stripchars"], ""),encoding=character_encoding))
+                    else:
+                        fielddata[iati_field][transaction_iati_field][part] = (makeUnicode(line[makeUnicode(part_column,encoding=character_encoding)],encoding=character_encoding))
+                    del part_column
+    try:
+        del field_column 
+        del field_constant
+        #del fielddata[iati_field]
+    except:
+        pass
+    return fielddata
+ 
+# Save the fields received
 def save_file(url, thetype, dir):
     req = urllib2.Request(url)
     try:

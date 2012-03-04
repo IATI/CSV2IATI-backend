@@ -84,7 +84,9 @@ def create_IATI_xml(iatidata, dir, o):
 
 # Process the mapping file and parse the CSV according to those rules, to construct a big list in "iatidata"
 def parse_csv(dir):
-    csvfile = open(dir + '/csv.csv', 'r')
+    #open in universal mode (fix Mac CSV encoding bug)
+    #these temporary files should probably be made more unique...
+    csvfile = open(dir + '/csv.csv', 'rU')
     csvdata=csv.DictReader(csvfile)
     jsonfile = open(dir + '/json.json', 'r')
     jsondata = json.loads(jsonfile.read())

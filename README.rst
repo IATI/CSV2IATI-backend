@@ -92,7 +92,7 @@ Then edit the configuration to something like:
 
         <Directory /var/www/csviati>
             Options Indexes FollowSymLinks Multiviews
-            WSGIProcessGroup csviatimodel
+            WSGIProcessGroup csviati
             WSGIApplicationGroup %{GLOBAL}
             Order deny,allow
             Allow from all

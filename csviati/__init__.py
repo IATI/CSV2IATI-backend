@@ -7,12 +7,11 @@ import json
 import csv
 import pprint
 import codecs
-import unicode_dict_reader as udr
 import re
 from xml.etree.cElementTree import Element, ElementTree
 from flask import Flask, render_template, flash, request, Markup
 app = Flask(__name__)
-
+UPLOAD_FILES_BASE = '/usr/sites/CSV-IATI-Converter/'
 
 def makeUnicode(data,encoding):
     try:
@@ -75,9 +74,11 @@ def create_IATI_xml(iatidata, dir, o):
                         else:
                             key.set(attrib, str(attrib_value))
                     a.append(key)
-    doc = ElementTree(node)        
-    XMLfilename = dir + '/' + str(time.time()) + '.xml'
-    doc.write(XMLfilename)
+    doc = ElementTree(node)
+    XMLfile = str(time.time()) + '.xml'
+    XMLfilename = dir + '/' + XMLfile
+    XMLabsfilename = UPLOAD_FILES_BASE + dir + '/' + XMLfile
+    doc.write(XMLabsfilename)
     XMLfilename_html = request.url_root + XMLfilename
     output += "<p>IATI-XML file saved to <a href=\"" + XMLfilename_html + "\">" + XMLfilename_html + "</a></p>"
     return output
@@ -86,9 +87,9 @@ def create_IATI_xml(iatidata, dir, o):
 def parse_csv(dir):
     #open in universal mode (fix Mac CSV encoding bug)
     #these temporary files should probably be made more unique...
-    csvfile = open(dir + '/csv.csv', 'rU')
+    csvfile = open(UPLOAD_FILES_BASE + dir + '/csv.csv', 'rU')
     csvdata=csv.DictReader(csvfile)
-    jsonfile = open(dir + '/json.json', 'r')
+    jsonfile = open(UPLOAD_FILES_BASE + dir + '/json.json', 'r')
     jsondata = json.loads(jsonfile.read())
     
     # Look in organisation section of JSON file for default organisation fields.
@@ -287,7 +288,7 @@ def save_file(url, thetype, dir):
         elif (thetype == 'json'):
 	        filename = 'json.json'
         webFile = urllib2.urlopen(req)
-        localFile = open(dir + '/' + filename, 'w')
+        localFile = open(UPLOAD_FILES_BASE + dir + '/' + filename, 'w')
         localFile.write(webFile.read())
         localFile.close()
         webFile.close()
@@ -309,9 +310,10 @@ def get_files():
         modelfile = request.form['model_url']
         dir = 'static/' + str(date.today())
         output = ''
-        if not os.path.exists(dir):
+	output = os.path.abspath(UPLOAD_FILES_BASE + dir)
+        if not os.path.exists(UPLOAD_FILES_BASE + dir):
             try:
-                os.makedirs(dir)
+                os.makedirs(UPLOAD_FILES_BASE + dir)
             except Exception, e:
                 flash(("Failed:", e),'bad')
                 flash("Couldn't create directory", 'bad')
@@ -322,6 +324,7 @@ def get_files():
             save_file(modelfile, 'json', dir)
         except Exception, e:
             flash("Couldn't save files.", 'bad')
+	    output += "<p>" + str(e) + "</p>"
             output += "<p>Files need to be provided as full URLs.</p>"
             output += "<p>You provided the following URLs:"
             output += "<p>CSV file: " + csvfile + "</p>"

@@ -37,7 +37,7 @@ def makePreviousEncoding(data,encoding):
     return nicedata
 
 def newline_fix(column):
-    newline_data = re.sub("[newline]", "\n", column)
+    newline_data = re.sub("\[newline\]", "\n", column)
     return newline_data
 
 # Process the data created in parse_csv()
@@ -338,7 +338,7 @@ def get_files():
         modelfile = request.form['model_url']
         dir = 'static/' + str(date.today())
         output = ''
-	output = os.path.abspath(UPLOAD_FILES_BASE + dir)
+	#output = os.path.abspath(UPLOAD_FILES_BASE + dir)
         if not os.path.exists(UPLOAD_FILES_BASE + dir):
             try:
                 os.makedirs(UPLOAD_FILES_BASE + dir)

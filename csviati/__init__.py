@@ -9,9 +9,13 @@ import pprint
 import codecs
 import re
 from xml.etree.cElementTree import Element, ElementTree
-from flask import Flask, render_template, flash, request, Markup
+from flask import Flask, render_template, flash, request, Markup, jsonify
 app = Flask(__name__)
 UPLOAD_FILES_BASE = '/usr/sites/CSV-IATI-Converter/'
+
+class Error(Exception):
+    def __init__(self, value):
+        self.value = value
 
 def makeUnicode(data,encoding):
     try:
@@ -91,8 +95,7 @@ def create_IATI_xml(iatidata, dir, o):
     XMLabsfilename = UPLOAD_FILES_BASE + dir + '/' + XMLfile
     doc.write(XMLabsfilename)
     XMLfilename_html = request.url_root + XMLfilename
-    output += "<p>IATI-XML file saved to <a href=\"" + XMLfilename_html + "\">" + XMLfilename_html + "</a></p>"
-    return output
+    return XMLfilename_html
 
 # Process the mapping file and parse the CSV according to those rules, to construct a big list in "iatidata"
 def parse_csv(dir):
@@ -153,7 +156,6 @@ def parse_csv(dir):
         return get_csv_data(m, o, character_encoding, csvdata, dir)
         
 def get_csv_data(m, o, character_encoding, csvdata, dir, multiple_field=''):
-    output = ''
     #iatidata will contain all of the data from the CSV file plus the mapping
     iatidata = []
     if (multiple_field):
@@ -185,14 +187,14 @@ def get_csv_data(m, o, character_encoding, csvdata, dir, multiple_field=''):
                             iati_field = m[field]["iati-field"]
                         except KeyError:
                             type, value, tb = sys.exc_info()
-                            return "%s" % value.message
+                            raise Error("%s" % value.message)
                         #iati_field contains the name of the IATI field this dimension should output.
                         if ((not already_got_project_data) or (iati_field == multiple_field)):
                             fielddata = get_field_data(iati_field, field, m, line, character_encoding)
                             linedata.append(fielddata)
                 except KeyError, e:
                     type, value, tb = sys.exc_info()
-                    return "ERROR: No such field: %s" % value.message
+                    raise Error("ERROR: No such field: %s" % value.message)
                 # End of this row within the activity group... got the first row
                 already_got_project_data = True
             # Finished this activity group, so write the activity
@@ -214,7 +216,7 @@ def get_csv_data(m, o, character_encoding, csvdata, dir, multiple_field=''):
                         iati_field = m[field]["iati-field"]
                     except KeyError:
                         type, value, tb = sys.exc_info()
-                        return "%s" % value.message
+                        raise Error("%s" % value.message)
                     #iati_field contains the name of the IATI field this dimension should output.
 
                     fielddata = get_field_data(iati_field, field, m, line, character_encoding)
@@ -225,10 +227,9 @@ def get_csv_data(m, o, character_encoding, csvdata, dir, multiple_field=''):
                 iatidata.append(linedata)
             except KeyError, e:
                 type, value, tb = sys.exc_info()
-                return "ERROR: No such field: %s" % value.message
+                raise Error("ERROR: No such field: %s" % value.message)
     flash("Parsed files", 'good')
-    output += create_IATI_xml(iatidata, dir, o)
-    return output
+    return create_IATI_xml(iatidata, dir, o)
  
 def get_field_data(iati_field, field, m, line, character_encoding):
     fielddata= {}
@@ -321,49 +322,48 @@ def save_file(url, thetype, dir):
         localFile.close()
         webFile.close()
     except urllib2.HTTPError, e:
-        output += "ERROR: The server couldn't fulfill the request."
+        output = "ERROR: The server couldn't fulfill the request."
         output += "Error code: ", e.code
-        return output
-        raise Exception
+        raise Error(output)
     except urllib2.URLError, e:
-        output += "ERROR: Could not reach the server."
+        output = "ERROR: Could not reach the server."
         output += "Reason: ", e.reason
-        return output
-        raise Exception
+        raise Error(output)
 
 # Receive the files as inputs from the command line
 def get_files():
-    if (request.form['csv_url'] != '') and (request.form['model_url'] != ''):
+    try:
         csvfile = request.form['csv_url']
         modelfile = request.form['model_url']
-        dir = 'static/' + str(date.today())
-        output = ''
-	#output = os.path.abspath(UPLOAD_FILES_BASE + dir)
-        if not os.path.exists(UPLOAD_FILES_BASE + dir):
-            try:
-                os.makedirs(UPLOAD_FILES_BASE + dir)
-            except Exception, e:
-                flash(("Failed:", e),'bad')
-                flash("Couldn't create directory", 'bad')
+    except KeyError:
         try:
-            flash("Saving CSV file...", 'notice')
-            save_file(csvfile, 'csv', dir)
-            flash("Saving mapping file...", 'notice')
-            save_file(modelfile, 'json', dir)
+            csvfile = request.args['csv_url']
+            modelfile = request.args['model_url']
+        except KeyError:
+            raise Error("Required arguments: csv_url model_url")
+    dir = 'static/' + str(date.today())
+#output = os.path.abspath(UPLOAD_FILES_BASE + dir)
+    if not os.path.exists(UPLOAD_FILES_BASE + dir):
+        try:
+            os.makedirs(UPLOAD_FILES_BASE + dir)
         except Exception, e:
-            flash("Couldn't save files.", 'bad')
-	    output += "<p>" + str(e) + "</p>"
-            output += "<p>Files need to be provided as full URLs.</p>"
-            output += "<p>You provided the following URLs:"
-            output += "<p>CSV file: " + csvfile + "</p>"
-            output += "<p>Model file: " + modelfile + "</p>"
-            return output
-        else:
-            flash("Saved files", 'good')
-            output += parse_csv(dir)
-            return output
+            flash(("Failed:", e),'bad')
+            raise Error("Couldn't create directory")
+    try:
+        flash("Saving CSV file...", 'notice')
+        save_file(csvfile, 'csv', dir)
+        flash("Saving mapping file...", 'notice')
+        save_file(modelfile, 'json', dir)
+    except Exception, e:
+        flash("Couldn't save files.", 'bad')
+        raise Error("<p>" + str(e) + "</p>"
+            + "<p>Files need to be provided as full URLs.</p>"
+            + "<p>You provided the following URLs:"
+            + "<p>CSV file: " + csvfile + "</p>"
+            + "<p>Model file: " + modelfile + "</p>")
     else:
-        return "Required arguments: csv_url model_url"
+        flash("Saved files", 'good')
+        return parse_csv(dir) 
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
@@ -372,8 +372,21 @@ def index():
     else:
         return showPostForm()
 
+@app.route("/json")
+def index_json():
+    try:
+        return jsonify(result=get_files())
+    except Error as e:
+        return jsonify(error=e.value)
+
 def doConversion():
-    return render_template('output.html', output=Markup(get_files()))
+    output = ''
+    try:
+        url = get_files()
+        output += "<p>IATI-XML file saved to <a href=\"" + url  + "\">" + url + "</a></p>"
+    except Error as e:
+        output += e.value
+    return render_template('output.html', output=Markup(output))
 
 def showPostForm():
     return render_template('form.html')

@@ -8,10 +8,25 @@ import csv
 import pprint
 import codecs
 import re
+from functools import wraps
 from xml.etree.cElementTree import Element, ElementTree
-from flask import Flask, render_template, flash, request, Markup, jsonify
+from flask import Flask, render_template, flash, request, Markup, jsonify, current_app
 app = Flask(__name__)
 UPLOAD_FILES_BASE = '/usr/sites/CSV-IATI-Converter/'
+
+def jsonp(func):
+    """Wraps JSONified output for JSONP requests."""
+    @wraps(func)
+    def decorated_function(*args, **kwargs):
+        callback = request.args.get('callback', False)
+        if callback:
+            data = str(func(*args, **kwargs).data)
+            content = str(callback) + '(' + data + ')'
+            mimetype = 'application/javascript'
+            return current_app.response_class(content, mimetype=mimetype)
+        else:
+            return func(*args, **kwargs)
+    return decorated_function
 
 class Error(Exception):
     def __init__(self, value):
@@ -373,6 +388,7 @@ def index():
         return showPostForm()
 
 @app.route("/json")
+@jsonp
 def index_json():
     try:
         return jsonify(result=get_files())

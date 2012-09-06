@@ -171,6 +171,9 @@ def parse_csv(dir):
         return get_csv_data(m, o, character_encoding, csvdata, dir)
         
 def get_csv_data(m, o, character_encoding, csvdata, dir, multiple_field=''):
+    # m contains the mapping data
+    # o contains the organisation data
+
     #iatidata will contain all of the data from the CSV file plus the mapping
     iatidata = []
     if (multiple_field):
@@ -206,7 +209,8 @@ def get_csv_data(m, o, character_encoding, csvdata, dir, multiple_field=''):
                         #iati_field contains the name of the IATI field this dimension should output.
                         if ((not already_got_project_data) or (iati_field == multiple_field)):
                             fielddata = get_field_data(iati_field, field, m, line, character_encoding)
-                            linedata.append(fielddata)
+                            if (fielddata):
+                                linedata.append(fielddata)
                 except KeyError, e:
                     type, value, tb = sys.exc_info()
                     raise Error("ERROR: No such field: %s" % value.message)

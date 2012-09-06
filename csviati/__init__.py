@@ -169,7 +169,7 @@ def parse_csv(dir):
     # Handle single data structure
     else:
         return get_csv_data(m, o, character_encoding, csvdata, dir)
-        
+
 def get_csv_data(m, o, character_encoding, csvdata, dir, multiple_field=''):
     # m contains the mapping data
     # o contains the organisation data
@@ -250,6 +250,36 @@ def get_csv_data(m, o, character_encoding, csvdata, dir, multiple_field=''):
     flash("Parsed files", 'good')
     return create_IATI_xml(iatidata, dir, o)
  
+def format_field_value(field, line, character_encoding):
+    part_column = field["column"]
+    # replace [newline] on part_column with \n -- this is as a consequence of a fix in the modeleditor
+    part_column = newline_fix(part_column)
+    if ((field.has_key("datatype")) and (field == 'float')):
+        try:
+            out = float(line[makePreviousEncoding(part_column, character_encoding)])
+            if (str(float(line[makePreviousEncoding(part_column, character_encoding)])) == '-0.0'):
+                out = '0'
+        except:
+            out = '0'
+    elif (field).has_key("stripchars"):
+        out = (makeUnicode(line[makePreviousEncoding(part_column,encoding=character_encoding)].strip().replace(field["stripchars"], ""),encoding=character_encoding))
+    elif (field.has_key("text-transform-type")):
+        if (field["text-transform-type"] == "date"):
+            text_transform_format = field["text-transform-format"]
+            thedata = makeUnicode(line[makePreviousEncoding(part_column, character_encoding)], encoding=character_encoding).strip()
+            try:
+                newdate = datetime.strptime(thedata, text_transform_format).strftime("%Y-%m-%d")
+                out = str(newdate)
+            except ValueError, e:
+                output += "Failed to convert date:", e
+                pass
+    else:
+        # this is the bit that almost always does the work
+        out = (makeUnicode(line[makePreviousEncoding(part_column,character_encoding)],encoding=character_encoding))
+
+    del part_column
+    return out
+
 def get_field_data(iati_field, field, m, line, character_encoding):
     fielddata= {}
     #fielddata = the hash to contain all of this dimension's data
@@ -264,33 +294,9 @@ def get_field_data(iati_field, field, m, line, character_encoding):
             if (m[field]["fields"][part]["datatype"] == 'constant'):
                 fielddata[iati_field][part] = m[field]["fields"][part]["constant"]
             else:
-                part_column = m[field]["fields"][part]["column"]
-                part_column = newline_fix(part_column)
-                if ((m[field]["fields"][part].has_key("datatype")) and (m[field]["fields"][part]["datatype"] == 'float')):
-                    try:
-                        fielddata[iati_field][part] = float(line[makePreviousEncoding(part_column, character_encoding)])
-                        if (str(float(line[makePreviousEncoding(part_column, character_encoding)])) == '-0.0'):
-                            fielddata[iati_field][part] = '0'
-                    except:
-                        fielddata[iati_field][part] = '0'
-                else:
-                    if (m[field]["fields"][part].has_key("text-transform-type")):
-                        if (m[field]["fields"][part]["text-transform-type"] == "date"):
-                            text_transform_format = m[field]["fields"][part]["text-transform-format"]
-                            thedata = makeUnicode(line[makePreviousEncoding(part_column, character_encoding)], encoding=character_encoding).strip()
-                            try:
-                                newdate = datetime.strptime(thedata, text_transform_format).strftime("%Y-%m-%d")
-                                fielddata[iati_field][part] = str(newdate)
-                                
-                            except ValueError, e:
-                                output += "Failed to convert date:", e
-                                pass
-                    else:
-                        # this is the bit that almost always does the work
-                        fielddata[iati_field][part] = makeUnicode(line[makePreviousEncoding(part_column, character_encoding)], encoding=character_encoding).strip()
+                fielddata[iati_field][part] = format_field_value(m[field]["fields"][part], line, character_encoding)
                 if (fielddata[iati_field][part] == ''):
                     fielddata_empty_flag = True
-                del part_column
     # it's transaction data, so break it down
     elif (m[field]["datatype"] == "transaction"):
         iati_field = m[field]["iati-field"]
@@ -304,17 +310,10 @@ def get_field_data(iati_field, field, m, line, character_encoding):
                 if (m[field]["tdatafields"][transactionfield]["fields"][part]["datatype"] == 'constant'):
                     fielddata[iati_field][transaction_iati_field][part] = m[field]["tdatafields"][transactionfield]["fields"][part]["constant"]
                 else:
-                    part_column = m[field]["tdatafields"][transactionfield]["fields"][part]["column"]
-                    # replace [newline] on part_column with \n -- this is as a consequence of a fix in the modeleditor
-                    part_column = newline_fix(part_column)
-                    if (m[field]["tdatafields"][transactionfield]["fields"][part]).has_key("stripchars"):
-                        fielddata[iati_field][transaction_iati_field][part] = (makeUnicode(line[makePreviousEncoding(part_column,encoding=character_encoding)].strip().replace(m[field]["tdatafields"][transactionfield]["fields"][part]["stripchars"], ""),encoding=character_encoding))
-                    else:
-                        fielddata[iati_field][transaction_iati_field][part] = (makeUnicode(line[makePreviousEncoding(part_column,encoding=character_encoding)],encoding=character_encoding))
+                    fielddata[iati_field][transaction_iati_field][part] = format_field_value(m[field]["tdatafields"][transactionfield]["fields"][part], line, character_encoding)
                     # if the value field is empty, then discard this transaction
                     if ((fielddata[iati_field][transaction_iati_field][part] == '') and (transaction_iati_field == 'value') and (part == 'text')):
                         fielddata_empty_flag = True
-                    del part_column
     try:
         del field_column 
         del field_constant

@@ -387,7 +387,7 @@ def index():
     else:
         return showPostForm()
 
-@app.route("/json")
+@app.route("/json", methods=['GET', 'POST'])
 @jsonp
 def index_json():
     try:

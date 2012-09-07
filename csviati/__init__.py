@@ -84,26 +84,23 @@ def create_IATI_xml(iatidata, dir, o):
         for field in activity:
         #e.g. activity['activity-date']
             for key, val in field.items():
+                print key,val
             #e.g. activity['activity-date']['fields']
-                if key == "transaction":
-                    transactions = Element("transaction")
-                    a.append(transactions)
-                    for trans_data, trans_data_value in val.items():
-                        transaction_field = Element(trans_data)
-                        for attrib, attrib_value in trans_data_value.items():
-                            if (attrib == 'text'):
-                                transaction_field.text = attrib_value
+                key = Element(key)
+                for attrib, attrib_value in val.items():
+                    if isinstance(attrib_value, dict):
+                        field = Element(attrib)
+                        for attrib2, attrib2_value in attrib_value.items():
+                            if (attrib2 == 'text'):
+                                field.text = attrib2_value
                             else:
-                                transaction_field.set(attrib, str(attrib_value))
-                        transactions.append(transaction_field)
-                else:
-                    key = Element(key)
-                    for attrib, attrib_value in val.items():
-                        if (attrib == 'text'):
-                            key.text = attrib_value
-                        else:
-                            key.set(attrib, str(attrib_value))
-                    a.append(key)
+                                field.set(attrib2, unicode(attrib2_value))
+                        key.append(field)
+                    elif (attrib == 'text'):
+                        key.text = attrib_value
+                    else:
+                        key.set(attrib, unicode(attrib_value))
+                a.append(key)
     doc = ElementTree(node)
     XMLfile = str(time.time()) + '.xml'
     XMLfilename = dir + '/' + XMLfile
@@ -285,10 +282,10 @@ def get_field_data(iati_field, field, m, line, character_encoding):
     #fielddata = the hash to contain all of this dimension's data
     fielddata[iati_field] = {}
     fielddata_empty_flag = False
-    
+   
     # NB all input has to be either as a compound field or as a transaction field, with multiple items in 'field'
     # if the dimension (field) is of datatype compound:
-    if (m[field]["datatype"] == "compound"):
+    if (m[field]["datatype"] == "compound" or m[field]["datatype"] == "hierarchy"):
         for part in m[field]["fields"]:
             # in the dimension mapping, the variable 'part' is called 'field'. Should probably make this more consistent...
             if (m[field]["fields"][part]["datatype"] == 'constant'):
@@ -298,7 +295,7 @@ def get_field_data(iati_field, field, m, line, character_encoding):
                 if (fielddata[iati_field][part] == ''):
                     fielddata_empty_flag = True
     # it's transaction data, so break it down
-    elif (m[field]["datatype"] == "transaction"):
+    if (m[field]["datatype"] == "hierarchy" or m[field]["datatype"] == "transaction"):
         iati_field = m[field]["iati-field"]
         fielddata[iati_field] = {}
         # got each transaction field...

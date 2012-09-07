@@ -59,6 +59,17 @@ def newline_fix(column):
     newline_data = re.sub("\[newline\]", "\n", column)
     return newline_data
 
+def append_recursive(key, val, parent):
+    key = Element(key)
+    for attrib, attrib_value in val.items():
+        if isinstance(attrib_value, dict):
+            append_recursive(attrib, attrib_value, key)
+        elif (attrib == 'text'):
+            key.text = attrib_value
+        else:
+            key.set(attrib, unicode(attrib_value))
+    parent.append(key)
+
 # Process the data created in parse_csv()
 def create_IATI_xml(iatidata, dir, o):
     #iatidata contains the activities
@@ -84,23 +95,8 @@ def create_IATI_xml(iatidata, dir, o):
         for field in activity:
         #e.g. activity['activity-date']
             for key, val in field.items():
-                print key,val
             #e.g. activity['activity-date']['fields']
-                key = Element(key)
-                for attrib, attrib_value in val.items():
-                    if isinstance(attrib_value, dict):
-                        field = Element(attrib)
-                        for attrib2, attrib2_value in attrib_value.items():
-                            if (attrib2 == 'text'):
-                                field.text = attrib2_value
-                            else:
-                                field.set(attrib2, unicode(attrib2_value))
-                        key.append(field)
-                    elif (attrib == 'text'):
-                        key.text = attrib_value
-                    else:
-                        key.set(attrib, unicode(attrib_value))
-                a.append(key)
+                append_recursive(key,val,a)
     doc = ElementTree(node)
     XMLfile = str(time.time()) + '.xml'
     XMLfilename = dir + '/' + XMLfile
@@ -277,40 +273,37 @@ def format_field_value(field, line, character_encoding):
     del part_column
     return out
 
+def get_fields_recursive(fields, line, character_encoding):
+    out = {}
+    for part in fields:
+        # in the dimension mapping, the variable 'part' is called 'field'. Should probably make this more consistent...
+        if (fields[part]["datatype"] == 'compound'):
+            out[part] = get_fields_recursive(fields[part]["fields"], line, character_encoding) 
+        elif (fields[part]["datatype"] == 'constant'):
+            out[part] = fields[part]["constant"]
+        else:
+            out[part] = format_field_value(fields[part], line, character_encoding)
+    return out
+
 def get_field_data(iati_field, field, m, line, character_encoding):
     fielddata= {}
     #fielddata = the hash to contain all of this dimension's data
-    fielddata[iati_field] = {}
     fielddata_empty_flag = False
    
     # NB all input has to be either as a compound field or as a transaction field, with multiple items in 'field'
     # if the dimension (field) is of datatype compound:
-    if (m[field]["datatype"] == "compound" or m[field]["datatype"] == "hierarchy"):
-        for part in m[field]["fields"]:
-            # in the dimension mapping, the variable 'part' is called 'field'. Should probably make this more consistent...
-            if (m[field]["fields"][part]["datatype"] == 'constant'):
-                fielddata[iati_field][part] = m[field]["fields"][part]["constant"]
-            else:
-                fielddata[iati_field][part] = format_field_value(m[field]["fields"][part], line, character_encoding)
-                if (fielddata[iati_field][part] == ''):
-                    fielddata_empty_flag = True
+    if m[field]["datatype"] == "compound":
+        fielddata[iati_field] = get_fields_recursive(m[field]["fields"], line, character_encoding)
     # it's transaction data, so break it down
-    if (m[field]["datatype"] == "hierarchy" or m[field]["datatype"] == "transaction"):
+    if m[field]["datatype"] == "transaction":
         iati_field = m[field]["iati-field"]
         fielddata[iati_field] = {}
         # got each transaction field...
         for transactionfield in m[field]["tdatafields"]:
             transaction_iati_field = m[field]["tdatafields"][transactionfield]["iati-field"]
-            fielddata[iati_field][transaction_iati_field] = {}
-            
-            for part in m[field]["tdatafields"][transactionfield]["fields"]:
-                if (m[field]["tdatafields"][transactionfield]["fields"][part]["datatype"] == 'constant'):
-                    fielddata[iati_field][transaction_iati_field][part] = m[field]["tdatafields"][transactionfield]["fields"][part]["constant"]
-                else:
-                    fielddata[iati_field][transaction_iati_field][part] = format_field_value(m[field]["tdatafields"][transactionfield]["fields"][part], line, character_encoding)
-                    # if the value field is empty, then discard this transaction
-                    if ((fielddata[iati_field][transaction_iati_field][part] == '') and (transaction_iati_field == 'value') and (part == 'text')):
-                        fielddata_empty_flag = True
+            fielddata[iati_field][transaction_iati_field] = get_fields_recursive(m[field]["tdatafields"][transactionfield]["fields"], line, character_encoding)
+                    
+    # BJWEBB fielddata_empty_flag removed
     try:
         del field_column 
         del field_constant
@@ -402,6 +395,7 @@ def doConversion():
         output += "<p>IATI-XML file saved to <a href=\"" + url  + "\">" + url + "</a></p>"
     except Error as e:
         output += e.value
+    print output
     return render_template('output.html', output=Markup(output))
 
 def showPostForm():

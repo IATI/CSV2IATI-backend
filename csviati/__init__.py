@@ -247,6 +247,7 @@ def format_field_value(field, line, character_encoding):
     part_column = field["column"]
     # replace [newline] on part_column with \n -- this is as a consequence of a fix in the modeleditor
     part_column = newline_fix(part_column)
+    out = ''
     if ((field.has_key("datatype")) and (field == 'float')):
         try:
             out = float(line[makePreviousEncoding(part_column, character_encoding)])
@@ -254,7 +255,7 @@ def format_field_value(field, line, character_encoding):
                 out = '0'
         except:
             out = '0'
-    elif (field).has_key("stripchars"):
+
         out = (makeUnicode(line[makePreviousEncoding(part_column,encoding=character_encoding)].strip().replace(field["stripchars"], ""),encoding=character_encoding))
     elif (field.has_key("text-transform-type")):
         if (field["text-transform-type"] == "date"):
@@ -264,7 +265,8 @@ def format_field_value(field, line, character_encoding):
                 newdate = datetime.strptime(thedata, text_transform_format).strftime("%Y-%m-%d")
                 out = str(newdate)
             except ValueError, e:
-                output += "Failed to convert date:", e
+                #TODO log this somehow else
+                #output += "Failed to convert date:", e
                 pass
     else:
         # this is the bit that almost always does the work

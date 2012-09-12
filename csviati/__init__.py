@@ -243,7 +243,8 @@ def get_csv_data(m, o, character_encoding, csvdata, dir, multiple_field=''):
     flash("Parsed files", 'good')
     return create_IATI_xml(iatidata, dir, o)
  
-def format_field_value(field, line, character_encoding):
+def format_field_value(fields, part, line, character_encoding):
+    field = fields[part]
     part_column = field["column"]
     # replace [newline] on part_column with \n -- this is as a consequence of a fix in the modeleditor
     part_column = newline_fix(part_column)
@@ -258,9 +259,9 @@ def format_field_value(field, line, character_encoding):
 
         out = (makeUnicode(line[makePreviousEncoding(part_column,encoding=character_encoding)].strip().replace(field["stripchars"], ""),encoding=character_encoding))
     elif (field.has_key("text-transform-type")):
+        thedata = makeUnicode(line[makePreviousEncoding(part_column, character_encoding)], encoding=character_encoding).strip()
         if (field["text-transform-type"] == "date"):
             text_transform_format = field["text-transform-format"]
-            thedata = makeUnicode(line[makePreviousEncoding(part_column, character_encoding)], encoding=character_encoding).strip()
             try:
                 newdate = datetime.strptime(thedata, text_transform_format).strftime("%Y-%m-%d")
                 out = str(newdate)
@@ -268,6 +269,14 @@ def format_field_value(field, line, character_encoding):
                 #TODO log this somehow else
                 #output += "Failed to convert date:", e
                 pass
+        elif (field["text-transform-type"] == "multiply"):
+            out = float(thedata)*float(field["text-transform-format"])
+        elif (field["text-transform-type"] == "text-before"):
+            out = field["text-transform-format"] + thedata 
+        elif (field["text-transform-type"] == "text-after"):
+            out = thedata + field["text-transform-format"]
+        elif (field["text-transform-type"] == "field-after"):
+            out = thedata + format_field_value(fields, field["text-transform-format"], line, character_encoding)
     else:
         # this is the bit that almost always does the work
         out = (makeUnicode(line[makePreviousEncoding(part_column,character_encoding)],encoding=character_encoding))
@@ -279,12 +288,14 @@ def get_fields_recursive(fields, line, character_encoding):
     out = {}
     for part in fields:
         # in the dimension mapping, the variable 'part' is called 'field'. Should probably make this more consistent...
+        if part.startswith('virtual_'):
+            continue
         if (fields[part]["datatype"] == 'compound'):
             out[part] = get_fields_recursive(fields[part]["fields"], line, character_encoding) 
         elif (fields[part]["datatype"] == 'constant'):
             out[part] = fields[part]["constant"]
         else:
-            out[part] = format_field_value(fields[part], line, character_encoding)
+            out[part] = format_field_value(fields, part, line, character_encoding)
     return out
 
 def get_field_data(iati_field, field, m, line, character_encoding):
@@ -397,7 +408,6 @@ def doConversion():
         output += "<p>IATI-XML file saved to <a href=\"" + url  + "\">" + url + "</a></p>"
     except Error as e:
         output += e.value
-    print output
     return render_template('output.html', output=Markup(output))
 
 def showPostForm():

@@ -139,16 +139,18 @@ def parse_csv(dir):
                     """ this creates, for each unique project ID, something like this (assuming project ID is 'PROJECT_1')
                      iati_identifiers_grouped_csvdata = {
                          'PROJECT_1' : [
-                             "project ID" = "PROJECT_1",
-                             "title" = "My project title",
-                             "sector_name" = "First sector"
-                         ],
-                         'PROJECT_1' : [
-                             "project ID" = "PROJECT_1",
-                             "title" = "My project title",
-                             "sector_name" = "Second sector"
+                             {
+                                 "project ID" = "PROJECT_1",
+                                 "title" = "My project title",
+                                 "sector_name" = "First sector"
+                             },
+                             {
+                                 "project ID" = "PROJECT_1",
+                                 "title" = "My project title",
+                                 "sector_name" = "Second sector"
+                             }
                          ]
-                        }
+                     }
                     """
         
 
@@ -243,8 +245,11 @@ def get_csv_data(m, o, character_encoding, csvdata, dir, multiple_field=''):
     flash("Parsed files", 'good')
     return create_IATI_xml(iatidata, dir, o)
  
-def format_field_value(fields, part, line, character_encoding):
-    field = fields[part]
+def format_field_value(fields, part, line, character_encoding, field=None):
+    if not field:
+        field = fields[part]
+    if field["datatype"] == "constant":
+        return field["constant"]
     part_column = field["column"]
     # replace [newline] on part_column with \n -- this is as a consequence of a fix in the modeleditor
     part_column = newline_fix(part_column)
@@ -280,6 +285,12 @@ def format_field_value(fields, part, line, character_encoding):
     else:
         # this is the bit that almost always does the work
         out = (makeUnicode(line[makePreviousEncoding(part_column,character_encoding)],encoding=character_encoding))
+
+    if field.has_key("alternatives"):
+        for n, alternative in field["alternatives"].items():
+            if out:
+                break 
+            out = format_field_value(fields, None, line, character_encoding, field=alternative)
 
     del part_column
     return out

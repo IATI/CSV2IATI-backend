@@ -8,6 +8,7 @@ import csv
 import pprint
 import codecs
 import re
+import codes
 from functools import wraps
 from xml.etree.cElementTree import Element, ElementTree
 from flask import Flask, render_template, flash, request, Markup, jsonify, current_app
@@ -285,6 +286,38 @@ def format_field_value(fields, part, line, character_encoding, field=None):
             out = thedata + field["text-transform-format"]
         elif (field["text-transform-type"] == "field-after"):
             out = thedata + format_field_value(fields, field["text-transform-format"], line, character_encoding)
+        elif (field["text-transform-type"] == "crs-country-code"):
+            try:
+                out = codes.crs_country[thedata][0] 
+            except KeyError:
+                out = ''
+        elif (field["text-transform-type"] == "crs-country-name"):
+            try:
+                out = codes.crs_country[thedata][1] 
+            except KeyError:
+                out = ''
+        elif (field["text-transform-type"] == "crs-region-code"):
+            if thedata in codes.crs_region:
+                return thedata
+        elif (field["text-transform-type"] == "crs-region-name"):
+            try:
+                out = codes.crs_region[thedata]
+            except KeyError:
+                out = '' 
+        elif (field["text-transform-type"] == "crs-tied-status"):
+            usd_commitment = thedata
+            usd_ammountuntied = makeUnicode(line[makePreviousEncoding(field["column2"], character_encoding)], encoding=character_encoding).strip()
+            usd_ammountpartialtied = makeUnicode(line[makePreviousEncoding(field["column3"], character_encoding)], encoding=character_encoding).strip()
+            # Copied from DCs PHP code
+            if usd_commitment:
+                if usd_commitment == usd_ammountuntied:
+                    out = 5
+                else:
+                    out = ''
+            elif usd_ammountpartialtied:
+                out = 3;
+            else:
+                out = 4;
     else:
         # this is the bit that almost always does the work
         out = (makeUnicode(line[makePreviousEncoding(part_column,character_encoding)],encoding=character_encoding))

@@ -275,7 +275,10 @@ def format_field_value(fields, part, line, character_encoding, field=None):
                 #output += "Failed to convert date:", e
                 pass
         elif (field["text-transform-type"] == "multiply"):
-            out = float(thedata)*float(field["text-transform-format"])
+            try:
+                out = float(thedata)*float(field["text-transform-format"])
+            except ValueError:
+                out = ''
         elif (field["text-transform-type"] == "text-before"):
             out = field["text-transform-format"] + thedata 
         elif (field["text-transform-type"] == "text-after"):

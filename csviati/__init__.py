@@ -13,7 +13,7 @@ from functools import wraps
 from xml.etree.cElementTree import Element, ElementTree
 from flask import Flask, render_template, flash, request, Markup, jsonify, current_app
 app = Flask(__name__)
-UPLOAD_FILES_BASE = '/usr/sites/CSV-IATI-Converter/'
+UPLOAD_FILES_BASE = 'csviati/'
 
 def jsonp(func):
     """Wraps JSONified output for JSONP requests."""
@@ -68,7 +68,8 @@ def append_recursive(key, val, parent):
         elif (attrib == 'text'):
             key.text = attrib_value
         else:
-            key.set(attrib, unicode(attrib_value))
+            if unicode(attrib_value) != '':
+                key.set(attrib, unicode(attrib_value))
     parent.append(key)
 
 # Process the data created in parse_csv()
@@ -93,6 +94,7 @@ def create_IATI_xml(iatidata, dir, o):
         ro.set("type", o["reporting-org"]["type"])
         ro.text = o["reporting-org"]["text"]
         a.append(ro)
+
         for field in activity:
         #e.g. activity['activity-date']
             for key, val in field.items():

@@ -93,6 +93,7 @@ def create_IATI_xml(iatidata, dir, o):
         a = Element("iati-activity")
         a.set("xml:lang", o["lang"])
         a.set("default-currency", o["default-currency"])
+        a.set("last-updated-datetime", current_datetime)
         node.append(a)
         
         ro = Element("reporting-org")

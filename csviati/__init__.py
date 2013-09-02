@@ -329,7 +329,11 @@ def format_field_value(fields, part, line, character_encoding, field=None):
                 out = 4;
     else:
         # this is the bit that almost always does the work
-        out = (makeUnicode(line[makePreviousEncoding(part_column,character_encoding)],encoding=character_encoding))
+        try:
+            out = (makeUnicode(line[makePreviousEncoding(part_column,character_encoding)],encoding=character_encoding))
+        except KeyError:
+            if part_column == '':
+                out = ''
 
     if field.has_key("alternatives"):
         for n, alternative in field["alternatives"].items():

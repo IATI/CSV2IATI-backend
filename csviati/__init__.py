@@ -62,15 +62,21 @@ def newline_fix(column):
 
 def append_recursive(key, val, parent):
     key = Element(key)
+    empty = True
     for attrib, attrib_value in val.items():
         if isinstance(attrib_value, dict):
-            append_recursive(attrib, attrib_value, key)
+            empty = append_recursive(attrib, attrib_value, key) and empty
         elif (attrib == 'text'):
-            key.text = attrib_value
+            if unicode(attrib_value) != '':
+                key.text = attrib_value
+                empty = False
         else:
             if unicode(attrib_value) != '':
                 key.set(attrib, unicode(attrib_value))
-    parent.append(key)
+                empty = False
+    if not empty:
+        parent.append(key)
+    return empty
 
 # Process the data created in parse_csv()
 def create_IATI_xml(iatidata, dir, o):

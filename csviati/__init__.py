@@ -363,18 +363,9 @@ def get_field_data(iati_field, field, m, line, character_encoding):
     #fielddata = the hash to contain all of this dimension's data
     fielddata_empty_flag = False
    
-    # NB all input has to be either as a compound field or as a transaction field, with multiple items in 'field'
     # if the dimension (field) is of datatype compound:
     if m[field]["datatype"] == "compound":
         fielddata[iati_field] = get_fields_recursive(m[field]["fields"], line, character_encoding)
-    # it's transaction data, so break it down
-    if m[field]["datatype"] == "transaction":
-        iati_field = m[field]["iati-field"]
-        fielddata[iati_field] = {}
-        # got each transaction field...
-        for transactionfield in m[field]["tdatafields"]:
-            transaction_iati_field = m[field]["tdatafields"][transactionfield]["iati-field"]
-            fielddata[iati_field][transaction_iati_field] = get_fields_recursive(m[field]["tdatafields"][transactionfield]["fields"], line, character_encoding)
                     
     # BJWEBB fielddata_empty_flag removed
     try:

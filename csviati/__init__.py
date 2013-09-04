@@ -464,7 +464,7 @@ def doConversion():
 def showPostForm():
     return render_template('form.html')
 
-app.secret_key = ')MrYYKq#!xXxrbkWmHJPRQiZhRL@1Te_:cgg`wyp83ac4KZ}A3tuJ*9{o)(*+4)'
+app.secret_key = os.urandom(24)
 
 if __name__ == '__main__':
     if (len(sys.argv) > 1):

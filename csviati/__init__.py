@@ -13,7 +13,8 @@ from functools import wraps
 from xml.etree.cElementTree import Element, ElementTree
 from flask import Flask, render_template, flash, request, Markup, jsonify, current_app
 app = Flask(__name__)
-UPLOAD_FILES_BASE = 'csviati/'
+
+UPLOAD_FILES_BASE = os.path.dirname(__file__) + '/'
 
 def jsonp(func):
     """Wraps JSONified output for JSONP requests."""

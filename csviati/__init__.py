@@ -102,7 +102,7 @@ def create_IATI_xml(iatidata, dir, o):
     #o contains the organisation data
     output = ''
     node = Element('iati-activities')
-    node.set("version", "1.02")
+    node.set("version", "1.03")
     current_datetime = datetime.now().replace(microsecond=0).isoformat()
     node.set("generated-datetime",current_datetime)
     character_encoding = o["data-encoding"]

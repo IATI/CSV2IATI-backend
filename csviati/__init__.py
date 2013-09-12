@@ -9,6 +9,7 @@ import pprint
 import codecs
 import re
 import codes
+from order import order_activity
 from functools import wraps
 from xml.etree.cElementTree import Element, ElementTree
 from flask import Flask, render_template, flash, request, Markup, jsonify, current_app
@@ -197,6 +198,8 @@ def get_csv_data(m, o, character_encoding, csvdata, dir, multiple_field=''):
     # m contains the mapping data
     # o contains the organisation data
 
+    ordered_m = order_activity(m)
+
     #iatidata will contain all of the data from the CSV file plus the mapping
     iatidata = []
     if (multiple_field):
@@ -213,7 +216,7 @@ def get_csv_data(m, o, character_encoding, csvdata, dir, multiple_field=''):
             # take all of the properties from the first item. Add the properties for each row for the multiple_field field.
             """
                         
-            for line in csvdata_items:
+            for i, line in enumerate(csvdata_items):
                 # for each row in the bundle of activities...
                 # this is equivalent to "for line in csvdata"
                 #
@@ -222,7 +225,7 @@ def get_csv_data(m, o, character_encoding, csvdata, dir, multiple_field=''):
                 # b) the iati field is equal to the multiple fields field
                 try:
                     # for each dimension in the mapping file...
-                    for field in m:
+                    for field in ordered_m:
                         #field = the dimension in the JSON mapping file. This can be anything as long as it's unique within the JSON.
                         try:
                             iati_field = m[field]["iati-field"]
@@ -232,7 +235,9 @@ def get_csv_data(m, o, character_encoding, csvdata, dir, multiple_field=''):
                         #iati_field contains the name of the IATI field this dimension should output.
                         if ((not already_got_project_data) or (iati_field == multiple_field)):
                             fielddata = get_field_data(iati_field, field, m, line, character_encoding)
-                            if (fielddata):
+                            if iati_field == multiple_field:
+                                linedata.insert(ordered_m.index(iati_field)+i, fielddata)
+                            elif (fielddata):
                                 linedata.append(fielddata)
                 except KeyError, e:
                     type, value, tb = sys.exc_info()
@@ -252,7 +257,7 @@ def get_csv_data(m, o, character_encoding, csvdata, dir, multiple_field=''):
             linedata = []
             try:
                 # for each dimension in the mapping file...
-                for field in m:
+                for field in ordered_m:
                     #field = the dimension in the JSON mapping file. This can be anything as long as it's unique within the JSON.
                     try:                   
                         iati_field = m[field]["iati-field"]

@@ -14,6 +14,22 @@ from xml.etree.cElementTree import Element, ElementTree
 from flask import Flask, render_template, flash, request, Markup, jsonify, current_app
 app = Flask(__name__)
 
+# From http://effbot.org/zone/element-lib.htm
+def indent(elem, level=0):
+    i = "\n" + level*"  "
+    if len(elem):
+        if not elem.text or not elem.text.strip():
+            elem.text = i + "  "
+        if not elem.tail or not elem.tail.strip():
+            elem.tail = i
+        for elem in elem:
+            indent(elem, level+1)
+        if not elem.tail or not elem.tail.strip():
+            elem.tail = i
+    else:
+        if level and (not elem.tail or not elem.tail.strip()):
+            elem.tail = i
+
 UPLOAD_FILES_BASE = os.path.dirname(__file__) + '/'
 
 def jsonp(func):
@@ -112,6 +128,7 @@ def create_IATI_xml(iatidata, dir, o):
     XMLfile = str(time.time()) + '.xml'
     XMLfilename = dir + '/' + XMLfile
     XMLabsfilename = UPLOAD_FILES_BASE + dir + '/' + XMLfile
+    indent(node)
     doc.write(XMLabsfilename)
     XMLfilename_html = request.url_root + XMLfilename
     return XMLfilename_html

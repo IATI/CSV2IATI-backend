@@ -130,7 +130,7 @@ def create_IATI_xml(iatidata, dir, o):
     XMLfilename = dir + '/' + XMLfile
     XMLabsfilename = UPLOAD_FILES_BASE + dir + '/' + XMLfile
     indent(node)
-    doc.write(XMLabsfilename)
+    doc.write(XMLabsfilename, encoding="utf-8", xml_declaration=True)
     XMLfilename_html = request.url_root + XMLfilename
     return XMLfilename_html
 

@@ -14,14 +14,11 @@ Clone the repository:
 
 ::
 
-    $ git clone git://github.com/markbrough/CSV-IATI-Converter.git
-
-
-Change into the directory and create a virtual environment (``virtualenv``)
+    $ git clone https://github.com/IATI/CSV2IATI-backend.git
 
 ::
 
-    $ cd CSV-IATI-Converter
+    $ cd CSV2IATI-backend
     $ virtualenv --no-site-packages ./pyenv
 
 Now activate the environment:
@@ -35,82 +32,6 @@ Install dependencies:
 ::
 
     $ pip install -r requirements.txt
-
-
-If you're running locally, you can stop here and jump to "Running the script". If you're deploying to an Apache server, keep reading...
-
-Install mod_wsgi
-
-::
-    
-    $ apt-get install libapache2-mod-wsgi
-
-Copy wsgi.py from the main directory to the appropriate folder in your web server directory, e.g. ``/var/www/csviati``
-
-::
-    
-    $ cp wsgi.py /var/www/csviati/wsgi.py
-
-Edit the file to make sure the paths are correct for your web server
-
-
-Create a symlink from this folder to the static files folder in your installation directory, so that they can be accessed by the web server:
-
-::
-    
-    $ ln -s /PATH_TO_YOUR_CSVCONVERTER_FILES/CSV-IATI-Converter/csviati/static /var/www/csviati/static
-
-
-Set up your Apache configuration files. You can do this easily by copying the default file:
-
-::
-    
-    $ cd /etc/apache2/sites-available/
-    $ cp default csviati
-
-Then edit the configuration to something like:
-
-::
-    
-    <VirtualHost *:80>
-        ServerAdmin webmaster@localhost
-
-        DocumentRoot /var/www
-        ErrorLog /var/log/apache2/error.log
-
-        # Possible values include: debug, info, notice, warn, error, crit,
-        # alert, emerg.
-        LogLevel debug
-
-        CustomLog /var/log/apache2/access.log combined
-
-        WSGIDaemonProcess csviati user=user__www group=group1 threads=5
-        WSGIScriptAlias /csviati /var/www/csviati/wsgi.py
-
-        Alias /csviati/static/ "/var/www/csviati/static/"
-
-
-        <Directory /var/www/csviati>
-            Options Indexes FollowSymLinks Multiviews
-            WSGIProcessGroup csviati
-            WSGIApplicationGroup %{GLOBAL}
-            Order deny,allow
-            Allow from all
-        </Directory>
-
-    </VirtualHost>
-
-Disable the default site and enable your new site
-
-::
-    
-    $ sudo a2dissite default && a2ensite csviati
-
-Reload Apache:
-
-::
-    
-    $ sudo /etc/init.d/apache2 reload
 
 
 Running the script
@@ -357,56 +278,7 @@ want to represent.
                     "constant": "DAC"
                 }
             }
-        },
-        "transaction": {
-            "datatype": "transaction",
-            "iati-field": "transaction",
-            "label": "Transactions",
-            "tdatafields": {
-                "transaction_type": {
-                    "label": "Transaction type",
-                    "iati-field": "transaction-type",
-                    "fields": {
-                        "text": {
-                            "datatype": "constant",
-                            "constant": "Disbursement"
-                        },
-                        "code": {
-                            "datatype": "constant",
-                            "constant": "D"
-                        }
-                    }
-                },
-                "value": {
-                    "label": "Transaction value",
-                    "iati-field": "value",
-                    "fields": {
-                        "text": {
-                            "datatype": "column",
-                            "column": "abs_amt_extended"
-                        },
-                        "value-date": {
-                            "datatype": "constant",
-                            "constant": "2010-01-01"
-                        }
-                    }
-                },
-                "transaction-date": {
-                    "label": "Transaction Date",
-                    "iati-field": "transaction-date",
-                    "fields": {
-                        "iso-date": {
-                            "datatype": "constant",
-                            "constant": "2010-01-01"
-                        },
-                        "text": {
-                            "datatype": "constant",
-                            "constant": "2010-01-01"
-                        }
-                    }
-                }
-            }
-        },
+        }
         "flow-type": {
             "datatype": "compound",
             "iati-field": "default-flow-type",
@@ -467,55 +339,5 @@ want to represent.
                 }
             }
         },
-        "commitments": {
-            "datatype": "transaction",
-            "iati-field": "transaction",
-            "label": "User field: commitments",
-            "tdatafields": {
-                "transaction-type": {
-                    "label": "Transaction Type",
-                    "iati-field": "transaction-type",
-                    "fields": {
-                        "text": {
-                            "datatype": "constant",
-                            "constant": "Commitment"
-                        },
-                        "code": {
-                            "datatype": "constant",
-                            "constant": "C"
-                        }
-                    }
-                },
-                "value": {
-                    "label": "Transaction Value",
-                    "iati-field": "value",
-                    "fields": {
-                        "text": {
-                            "datatype": "column",
-                            "column": "abs_commitments"
-                        },
-                        "value-date": {
-                            "datatype": "constant",
-                            "constant": "2010-01-01"
-                        }
-                    }
-                },
-                "transaction-date": {
-                    "label": "Transaction Date",
-                    "iati-field": "transaction-date",
-                    "fields": {
-                        "iso-date": {
-                            "datatype": "constant",
-                            "constant": "2010-01-01"
-                        },
-                        "text": {
-                            "datatype": "constant",
-                            "constant": "2010-01-01"
-                        }
-                    }
-                }
-            }
-        }
-
     }
 

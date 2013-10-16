@@ -184,6 +184,8 @@ def parse_csv(dir):
         
 
         multiple_fields = o["data-structure"]["multiple"]
+        if not type(multiple_fields) == list:
+            multiple_fields = [ multiple_fields ]
         return get_csv_data(m, o, character_encoding, iati_identifiers_grouped_csvdata, dir, multiple_fields)
         """for line in iati_identifiers_grouped_csvdata[iati_identifier]:
             # write everything into the array. for the multiple field, just add a number to that field.
@@ -194,7 +196,7 @@ def parse_csv(dir):
     else:
         return get_csv_data(m, o, character_encoding, csvdata, dir)
 
-def get_csv_data(m, o, character_encoding, csvdata, dir, multiple_field=''):
+def get_csv_data(m, o, character_encoding, csvdata, dir, multiple_fields=[]):
     # m contains the mapping data
     # o contains the organisation data
 
@@ -202,7 +204,7 @@ def get_csv_data(m, o, character_encoding, csvdata, dir, multiple_field=''):
 
     #iatidata will contain all of the data from the CSV file plus the mapping
     iatidata = []
-    if (multiple_field):
+    if (multiple_fields):
         # for each unique iati identifier...
         for csvdata_group, csvdata_items in csvdata.items():
             # for each group, create a line of data
@@ -233,9 +235,9 @@ def get_csv_data(m, o, character_encoding, csvdata, dir, multiple_field=''):
                             type, value, tb = sys.exc_info()
                             raise Error("%s" % value.message)
                         #iati_field contains the name of the IATI field this dimension should output.
-                        if ((not already_got_project_data) or (iati_field == multiple_field)):
+                        if ((not already_got_project_data) or (iati_field in multiple_fields)):
                             fielddata = get_field_data(iati_field, field, m, line, character_encoding)
-                            if iati_field == multiple_field:
+                            if iati_field in multiple_fields:
                                 linedata.insert(ordered_m.index(iati_field)+i, fielddata)
                             elif (fielddata):
                                 linedata.append(fielddata)

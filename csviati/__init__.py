@@ -405,6 +405,8 @@ def get_field_data(iati_field, field, m, line, character_encoding):
  
 # Save the fields received
 def save_file(url, thetype, dir):
+    if not url.startswith('http'):
+        raise Error("Invalid HTTP(S) url")
     req = urllib2.Request(url)
     try:
         if (thetype == 'csv'):
@@ -452,7 +454,7 @@ def get_files():
     except Exception, e:
         flash("Couldn't save files.", 'bad')
         raise Error("<p>" + str(e) + "</p>"
-            + "<p>Files need to be provided as full URLs.</p>"
+            + "<p>Files need to be provided as full HTTP(S) URLs.</p>"
             + "<p>You provided the following URLs:"
             + "<p>CSV file: " + csvfile + "</p>"
             + "<p>Model file: " + modelfile + "</p>")

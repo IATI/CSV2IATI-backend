@@ -9,7 +9,7 @@ import pprint
 import codecs
 import re
 import codes
-from order import order_activity
+import order
 from functools import wraps
 from xml.etree.cElementTree import Element, ElementTree, Comment
 from flask import Flask, render_template, flash, request, Markup, jsonify, current_app
@@ -201,7 +201,10 @@ def get_csv_data(m, o, character_encoding, csvdata, dir, multiple_fields=[]):
     # m contains the mapping data
     # o contains the organisation data
 
-    ordered_m = order_activity(m)
+    ordered_m = [ x[0] for x in
+        sorted(m.items(),
+               key=lambda x: order.key(x[1]['iati-field']))
+        ]
 
     #iatidata will contain all of the data from the CSV file plus the mapping
     iatidata = []

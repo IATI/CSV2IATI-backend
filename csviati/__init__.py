@@ -154,7 +154,7 @@ def parse_csv(dir):
     character_encoding = jsondata["organisation"].get("data-encoding-override") or jsondata["organisation"]["data-encoding"]
     
     # Handle multiple data structure
-    if (("multiple" in o["data-structure"]) and (o["data-structure"]["multiple"] != "")):
+    if ("data-structure" in o) and ("multiple" in o["data-structure"]) and (o["data-structure"]["multiple"] != ""):
         # if mapping has stated that there are multiple rows per sector (etc.), then collect all the iati-identifiers together
         iati_identifiers = set([])
         iati_identifiers_grouped_csvdata = {}
@@ -282,6 +282,7 @@ def get_csv_data(m, o, character_encoding, csvdata, dir, multiple_fields=[]):
                 type, value, tb = sys.exc_info()
                 raise Error("ERROR: No such field: %s" % value.message)
     flash("Parsed files", 'good')
+    print iatidata
     return create_IATI_xml(iatidata, dir, o)
  
 def format_field_value(fields, part, line, character_encoding, field=None):
@@ -395,6 +396,8 @@ def get_field_data(iati_field, field, m, line, character_encoding):
     # if the dimension (field) is of datatype compound:
     if m[field]["datatype"] == "compound":
         fielddata[iati_field] = get_fields_recursive(m[field]["fields"], line, character_encoding)
+    elif m[field]["datatype"] == "constant":
+        fielddata[iati_field] = m[field]["constant"]
                     
     # BJWEBB fielddata_empty_flag removed
     try:

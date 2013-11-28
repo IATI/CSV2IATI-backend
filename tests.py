@@ -127,6 +127,24 @@ Alice,3
             #self.assertEquals(len(contact_infos), 2)
             self.assertIn('Alice', [ c.find('person-name').text for c in contact_infos ])
 
+    def test_hierarchy(self):
+            tree = conversion_wrapper("""hierarchy_column,b
+2,3
+""",
+                {
+                    'organisation': basic_organisation,
+                    'mapping': {
+                        'test1': {
+                            'datatype': 'column',
+                            'iati-field': 'hierarchy',
+                            'column': 'hierarchy_column'
+                        }
+                    }
+                })
+            root = tree.getroot()
+            self.assertEquals(root[0].findall('hierarchy'), [])
+            self.assertEquals(root[0].attrib['hierarchy'], '2')
+
 
 if __name__ == '__main__':
     unittest.main()

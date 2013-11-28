@@ -140,7 +140,10 @@ def create_IATI_xml(iatidata, dir, o):
         #e.g. activity['activity-date']
             for key, val in field.items():
             #e.g. activity['activity-date']['fields']
-                append_recursive(key,val,a)
+                if type(val) == unicode:
+                    a.set(key, val)
+                else:
+                    append_recursive(key,val,a)
     doc = ElementTree(node)
     XMLfile = str(time.time()) + '.xml'
     XMLfilename = dir + '/' + XMLfile
@@ -392,7 +395,7 @@ def format_field_value(fields, part, line, character_encoding, field=None):
 def get_fields_recursive(fields, line, character_encoding):
     out = {}
     for part in fields:
-        # in the dimension mapping, the variable 'part' is called 'field'. Should probably make this more consistent...
+        # in the dimension mapping, the variable 'part' is called 'field'. TODO Make this more consistent...
         if part.startswith('virtual_'):
             continue
         if (fields[part]["datatype"] == 'compound'):
@@ -413,6 +416,8 @@ def get_field_data(iati_field, field, m, line, character_encoding):
         fielddata[iati_field] = get_fields_recursive(m[field]["fields"], line, character_encoding)
     elif m[field]["datatype"] == "constant":
         fielddata[iati_field] = m[field]["constant"]
+    elif m[field]["datatype"] == "column":
+        fielddata[iati_field] = format_field_value(m, field, line, character_encoding)
                     
     # BJWEBB fielddata_empty_flag removed
     try:

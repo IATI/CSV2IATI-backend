@@ -282,7 +282,7 @@ def get_csv_data(m, o, character_encoding, csvdata, dir, multiple_fields=[]):
                 type, value, tb = sys.exc_info()
                 raise Error("ERROR: No such field: %s" % value.message)
     flash("Parsed files", 'good')
-    print iatidata
+    #print iatidata
     return create_IATI_xml(iatidata, dir, o)
  
 def format_field_value(fields, part, line, character_encoding, field=None):

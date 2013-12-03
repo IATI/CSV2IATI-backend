@@ -121,20 +121,21 @@ def create_IATI_xml(iatidata, dir, o):
         ro.text = o["reporting-org"]["text"]
         a.append(ro)
 
-        contact_info = Element("contact-info")
-        person_name = Element("person-name")
-        person_name.text = o["contact-info"]["person-name"]
-        telephone = Element("telephone")
-        telephone.text = o["contact-info"]["telephone"]
-        email = Element("email")
-        email.text = o["contact-info"]["email"]
-        address = Element("mailing-address")
-        address.text = o["contact-info"]["address"]
-        contact_info.append(person_name)
-        contact_info.append(telephone)
-        contact_info.append(email)
-        contact_info.append(address)
-        a.append(contact_info)
+        if "add-to-activities" in o["contact-info"]:
+            contact_info = Element("contact-info")
+            person_name = Element("person-name")
+            person_name.text = o["contact-info"]["person-name"]
+            telephone = Element("telephone")
+            telephone.text = o["contact-info"]["telephone"]
+            email = Element("email")
+            email.text = o["contact-info"]["email"]
+            address = Element("mailing-address")
+            address.text = o["contact-info"]["address"]
+            contact_info.append(person_name)
+            contact_info.append(telephone)
+            contact_info.append(email)
+            contact_info.append(address)
+            a.append(contact_info)
 
         for field in activity:
         #e.g. activity['activity-date']

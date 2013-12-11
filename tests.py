@@ -2,6 +2,7 @@ import unittest
 import csviati
 import os
 import json
+import copy
 import xml.etree.cElementTree as etree
 
 basic_organisation = {
@@ -58,12 +59,14 @@ class TestSequenceFunctions(unittest.TestCase):
         self.assertRaises(csviati.Error, csviati.save_file, 'file:///etc/passwd', 'csv', '.')
 
     def test_conversion_basic(self):
+            organisation = copy.deepcopy(basic_organisation)
+            organisation['contact-info']['add-to-activities'] = [ 'true' ]
             tree = conversion_wrapper("""a,b
 42,3
 43,4
 """,
                 {
-                    'organisation': basic_organisation,
+                    'organisation': organisation,
                     'mapping': {
                         'test1': text_column('a', 'test-el'),
                         'test2': {
@@ -124,7 +127,7 @@ Alice,3
                 })
             root = tree.getroot()
             contact_infos = root[0].findall('contact-info')
-            #self.assertEquals(len(contact_infos), 2)
+            self.assertEquals(len(contact_infos), 1)
             self.assertIn('Alice', [ c.find('person-name').text for c in contact_infos ])
 
     def test_hierarchy(self):

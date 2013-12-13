@@ -261,8 +261,11 @@ def get_csv_data(m, o, character_encoding, csvdata, dir, multiple_fields=[]):
                         #iati_field contains the name of the IATI field this dimension should output.
                         if ((not already_got_project_data) or (iati_field in multiple_fields)):
                             fielddata = get_field_data(iati_field, field, m, line, character_encoding)
-                            if iati_field in multiple_fields:
-                                linedata.insert(ordered_m.index(iati_field)+i, fielddata)
+                            if already_got_project_data:
+                                keys = [ x.keys()[0] for x in linedata ]
+                                keys.reverse()
+                                index = len(keys) - keys.index(iati_field)
+                                linedata.insert(index, fielddata)
                             elif (fielddata):
                                 linedata.append(fielddata)
                 except KeyError, e:

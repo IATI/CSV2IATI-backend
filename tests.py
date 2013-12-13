@@ -51,14 +51,16 @@ def text_column(column_name, iati_field=None):
         out['iati-field'] = iati_field
     return out
 
-class TestSequenceFunctions(unittest.TestCase):
-    def setUp(self):
-        pass
-
+class TestSave(unittest.TestCase):
     def test_save_file_file_fails(self):
         self.assertRaises(csviati.Error, csviati.save_file, 'file:///etc/passwd', 'csv', '.')
 
-    def test_conversion_basic(self):
+class TestConversion(unittest.TestCase):
+    def setUp(self):
+        pass
+
+
+    def test_basic(self):
             organisation = copy.deepcopy(basic_organisation)
             organisation['contact-info']['add-to-activities'] = [ 'true' ]
             tree = conversion_wrapper("""a,b
@@ -109,7 +111,7 @@ class TestSequenceFunctions(unittest.TestCase):
             self.assertEquals(root[1].find('another-test-el').attrib['test-att'], '4')
 
 
-    def test_conversion_contact(self):
+    def test_contact(self):
             tree = conversion_wrapper("""person_name,b
 Alice,3
 """,
@@ -147,6 +149,51 @@ Alice,3
             root = tree.getroot()
             self.assertEquals(root[0].findall('hierarchy'), [])
             self.assertEquals(root[0].attrib['hierarchy'], '2')
+
+    def test_multiple(self):
+        organisation = copy.deepcopy(basic_organisation)
+        organisation['data-structure'] = {'multiple':['multiple-field']}
+        tree = conversion_wrapper("""a,b,c
+1,2,4
+1,3,4
+""",
+            {
+                'organisation': organisation,
+                'mapping': {
+                    'iati-identifier': text_column('a', 'iati-identifier'),
+                    'multiple-field': text_column('b', 'multiple-field'),
+                    'other-field': text_column('c', 'other-field'),
+                }
+            })
+        root = tree.getroot()
+        self.assertEquals(len(root.findall('iati-activity')), 1)
+        multiple_text = [ x.text for x in root.find('iati-activity').findall('multiple-field') ]
+        self.assertEquals(multiple_text, ['2', '3'])
+
+    def test_multiple_custom(self):
+        organisation = copy.deepcopy(basic_organisation)
+        organisation['data-structure'] = {'multiple':['multiple-field']}
+        tree = conversion_wrapper("""a,b,c,d
+1,2,5,6
+1,3,5,7
+1,4,5,8
+""",
+            {
+                'organisation': organisation,
+                'mapping': {
+                    'custom1': text_column('a', 'iati-identifier'),
+                    'custom2': text_column('b', 'multiple-field'),
+                    'custom3': text_column('c', 'other-field'),
+                    'custom4': text_column('d', 'multiple-field'),
+                }
+            })
+        root = tree.getroot()
+        #print etree.tostring(tree.getroot())
+        self.assertEquals(len(root.findall('iati-activity')), 1)
+        multiple_text = [ x.text for x in root.find('iati-activity').findall('multiple-field') ]
+        self.assertEquals(set(multiple_text), set(['2', '3', '4', '6', '7', '8']))
+        self.assertEquals([ x for x in multiple_text if int(x) < 5], ['2','3','4'])
+        self.assertEquals([ x for x in multiple_text if int(x) > 5], ['6','7','8'])
 
 
 if __name__ == '__main__':

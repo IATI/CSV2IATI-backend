@@ -34,8 +34,19 @@ Install dependencies:
     $ pip install -r requirements.txt
 
 
-Running the script
-------------------
+Running
+-------
+
+::
+    
+    python csv2iati/__init__.py
+
+Then open http://127.0.0.1:5001/ in a webbrowser.
+
+Standandalone script
+^^^^^^^^^^^^^^^^^^^^
+
+The repository also contains a standandlone script, without a web interface bu this is curerntly **very out of date**.
 
 The script takes two arguments: the source CSV file and the mapping. 
 These must be provided as full URLs, even if they are only on your computer. For example:

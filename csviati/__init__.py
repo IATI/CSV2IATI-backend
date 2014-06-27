@@ -50,6 +50,8 @@ def jsonp(func):
 class Error(Exception):
     def __init__(self, value):
         self.value = value
+    def __str__(self):
+        return str(self.value)
 
 def makeUnicode(data,encoding):
     try:
@@ -454,11 +456,11 @@ def save_file(url, thetype, dir):
         webFile.close()
     except urllib2.HTTPError, e:
         output = "ERROR: The server couldn't fulfill the request."
-        output += "Error code: ", e.code
+        output += "Error code: {0}".format(e.code)
         raise Error(output)
     except urllib2.URLError, e:
         output = "ERROR: Could not reach the server."
-        output += "Reason: ", e.reason
+        output += "Reason: {0}".format(e.reason)
         raise Error(output)
 
 # Receive the files as inputs from the command line

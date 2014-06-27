@@ -182,7 +182,7 @@ def parse_csv(dir):
         iati_identifiers_grouped_csvdata = {}
         for field in m:
             if (m[field]["iati-field"]=='iati-identifier'):
-                column = m[field]["fields"]["text"]["column"]
+                column = m[field]["fields"]["text"]["column"].encode(character_encoding)
                 for line in csvdata:
                     iati_identifiers.add(line[column])
                     if (not(line[column] in iati_identifiers_grouped_csvdata)):

@@ -234,6 +234,7 @@ def get_csv_data(m, o, character_encoding, csvdata, dir, multiple_fields=[]):
         # for each unique iati identifier...
         for csvdata_group, csvdata_items in csvdata.items():
             # for each group, create a line of data
+            print csvdata_group
             linedata = []
             already_got_project_data = False
             """
@@ -263,13 +264,7 @@ def get_csv_data(m, o, character_encoding, csvdata, dir, multiple_fields=[]):
                         #iati_field contains the name of the IATI field this dimension should output.
                         if ((not already_got_project_data) or (iati_field in multiple_fields)):
                             fielddata = get_field_data(iati_field, field, m, line, character_encoding)
-                            if already_got_project_data:
-                                keys = [ x.keys()[0] for x in linedata ]
-                                keys.reverse()
-                                index = len(keys) - keys.index(iati_field)
-                                linedata.insert(index, fielddata)
-                            elif (fielddata):
-                                linedata.append(fielddata)
+                            linedata.append(fielddata)
                 except KeyError, e:
                     type, value, tb = sys.exc_info()
                     raise Error("ERROR: No such field: %s" % value.message)

@@ -385,7 +385,7 @@ def format_field_value(fields, part, line, character_encoding, field=None):
     else:
         # this is the bit that almost always does the work
         try:
-            out = (makeUnicode(line[makePreviousEncoding(part_column,character_encoding)],encoding=character_encoding))
+            out = (makeUnicode(line[makePreviousEncoding(part_column,character_encoding)] or '',encoding=character_encoding))
         except KeyError:
             if part_column == '':
                 out = ''
